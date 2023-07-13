@@ -23,10 +23,10 @@ bool initialized;
 bool encountered_obstacle;
 
 // Value detecting how many cycles the robot has gone through
-bool cycle_count;
+int cycle_count;
 
 // Value detecting if there is a hand signal
-bool hand_signal;
+int hand_signal;
 
 /**
  * The start point for the extraction state. This function will return once
