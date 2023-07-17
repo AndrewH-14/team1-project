@@ -23,10 +23,10 @@ bool initialized;
 bool encountered_obstacle;
 
 // Value detecting how many cycles the robot has gone through
-int cycle_count;
+bool cycle_count;
 
 // Value detecting if there is a hand signal
-int hand_signal;
+bool hand_signal;
 
 /**
  * The start point for the extraction state. This function will return once
@@ -70,9 +70,9 @@ bool state_extraction_start(void) {
             encountered_obstacle = false;
         }
         // If the robot has turned sufficient times then the exploring region should increase
-        if ((cycle_count % 4) == 3)
+        if ((cycle_count % 4) == 3 || (count_cycle % 4) == 1);
         {
-            cycle_limit += 2;
+            cycle_limit += 1;
         }
         count = 0;
         cycle_count++;
