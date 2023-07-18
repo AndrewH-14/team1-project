@@ -6,7 +6,8 @@
 #include <MeMegaPi.h>
 
 // TODO: Determine the correct LED
-MeRGBLed led(PORT_3);
+MeRGBLed led1(PORT_13);
+MeRGBLed led2(PORT_14);
 
 /**
  * Sets the LED color on the MakeBlock.
@@ -16,6 +17,8 @@ MeRGBLed led(PORT_3);
  * @param b The amount of green to display on LED [0, 255]
  */
 void led_set_color(uint8_t r, uint8_t g, uint8_t b) {
-    led.setColor(r, g, b);
-    led.show();
+      led1.setColor(r, g, b);
+      led1.show();
+      led2.setColor(r, g, b);
+      led2.show();
 }

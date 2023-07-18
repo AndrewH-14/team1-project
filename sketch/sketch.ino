@@ -7,6 +7,10 @@
 #include "state_extraction.h"
 #include "state_rendezvous_verify.h"
 #include "led.h"
+#include "motor.h"
+#include "src/MeNewRGBLed.h"
+
+#include <MeMegaPi.h>
 
 /**
  * All possible states for the MakeBlock
