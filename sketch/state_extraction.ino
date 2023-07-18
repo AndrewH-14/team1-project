@@ -70,7 +70,7 @@ bool state_extraction_start(void) {
             encountered_obstacle = false;
         }
         // If the robot has turned sufficient times then the exploring region should increase
-        if ((cycle_count % 4) == 3 || (count_cycle % 4) == 1);
+        if ((cycle_count % 4) == 3 || (cycle_count % 4) == 1);
         {
             cycle_limit += 1;
         }
