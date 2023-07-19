@@ -27,7 +27,19 @@ typedef enum
   GESTURE_TYPE_ALL
 } GESTURE_TYPE_ENUM;
 
+/**
+ * All possible states for rendezvous mode
+ */
+enum RendezvousStates {
+    STATE_1,
+    STATE_2,
+    STATE_3,
+    STATE_4,
+    STATE_DONE
+};
 
+// Stores the current state of the MakeBlock
+enum RendezvousStates cur_state;
 
 /**
  * State logic: Robot detects hand motion on team member, switches to Rendezvous Mode
@@ -44,10 +56,7 @@ typedef enum
  * Reads expected hand signal (e.g Left, Right Left, Left)
  * Flashes LED to confirm successful authentication
  *
- *
 */
-
-
 
 /**
  * The start point for the rendezvous verify state. This function will return
@@ -57,23 +66,17 @@ typedef enum
  * @retval false An error occured.
 */
 bool state_rendezvous_verify_start(void) {
+
+    cur_state = STATE_1;
+    gesture_model();
+
     return true;
 }
 
+
 /**
- * \par Function
- *    detect_gesture
- * \par Description
- *    This function is used to detect gesture.
- * \param[in]
- *    none.
- * \par Output
- *    uint8_t
- * \return
- *    None
- * \par Others
- *    None
- */
+ * Function that will determine and return the specific hand signal detected
+*/
 uint8_t detect_gesture(void)
 {
   static uint32_t s_sensor1_time = 0;
@@ -178,79 +181,90 @@ uint8_t detect_gesture(void)
 
 
 /**
- * \par Function
- *    gesture_model
- * \par Description
- *    This function is used to detect gesture, run in roop function.
- * \param[in]
- *    none.
- * \par Output
- *    none.
- * \return
- *    None
- * \par Others
- *    None
+ * This function utilizes the output from detect_gesture and commands what to do.
  */
 void gesture_model(void)
 {
-  uint8_t gesture_type;
-  static uint8_t move_type = 0;
-  static uint8_t init_led_flag = false;
-  static uint32_t s_movement_start_time = 0;
+    uint8_t gesture_type;
+    static uint8_t move_type = 0;
+    static uint8_t init_led_flag = false;
+    static uint32_t s_movement_start_time = 0;
 
-  if(init_led_flag == false)
-  {
+    if(init_led_flag == false) {
     init_led_flag = true;
     new_rgbled_show_all(0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL,0);
-  }
+    }
 
-  gesture_type = detect_gesture();
+    gesture_type = detect_gesture();
 
-  // Printout gesture type
-  if(gesture_type == GESTURE_TYPE_LEFT_TO_RIGHT)
-  {
+    switch (cur_state) {
+        case STATE_1:
+
+            break;
+        case STATE_2:
+            //
+            break;
+        case STATE_3:
+            //
+            break;
+        case STATE_4:
+            //
+            break;
+        case STATE_DONE:
+            //
+            break;
+        default:
+            // Set LED to red to signal an error
+            led_set_color(255, 0, 0);
+            break;
+    }
+
+
+    // Printout gesture type
+    if(gesture_type == GESTURE_TYPE_LEFT_TO_RIGHT)
+    {
     new_rgbled_show_all(0,0,RGB_HIGH_VAL,0,0,RGB_HIGH_VAL,0);
     move_type = 1;
     s_movement_start_time = millis();
     move_control(GESTURE_MOVE_SPEED, 0, 0);
     // Serial.println("gesture: left to right");
-  }
-  else if(gesture_type == GESTURE_TYPE_RIGHT_TO_LEFT)
-  {
+    }
+    else if(gesture_type == GESTURE_TYPE_RIGHT_TO_LEFT)
+    {
     new_rgbled_show_all(0,0,RGB_HIGH_VAL,0,0,RGB_HIGH_VAL,0);
     move_type = 2;
     move_control(-1 * GESTURE_MOVE_SPEED, 0, 0);
     s_movement_start_time = millis();
     // Serial.println("gesture: right to left");
-  }
-  else if(gesture_type == GESTURE_TYPE_ALL)
-  {
+    }
+    else if(gesture_type == GESTURE_TYPE_ALL)
+    {
     new_rgbled_show_all(0,0,RGB_HIGH_VAL,0,0,RGB_HIGH_VAL,0);
     move_type = 3;
     move_control(0, -1 * GESTURE_MOVE_SPEED, 0);
     s_movement_start_time = millis();
     // Serial.println("gesture: all");
-  }
+    }
 
-  if((move_type==1) || (move_type==2))
-  {
+    if((move_type==1) || (move_type==2))
+    {
     if((millis() - s_movement_start_time) > 1000)
     {
-      new_rgbled_show_all(0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL,0);
-      // stop();
-      move_control(0, 0, 0);
-      move_type = 0;
+        new_rgbled_show_all(0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL,0);
+        // stop();
+        move_control(0, 0, 0);
+        move_type = 0;
     }
-  }
-  else if(move_type==3)
-  {
+    }
+    else if(move_type==3)
+    {
     if((millis() - s_movement_start_time) > 200)
     {
-      new_rgbled_show_all(0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL,0);
-      // stop();
-      move_control(0, 0, 0);
-      move_type = 0;
+        new_rgbled_show_all(0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL,0);
+        // stop();
+        move_control(0, 0, 0);
+        move_type = 0;
     }
-  }
+    }
 
 }
