@@ -15,6 +15,15 @@ MeBarrierSensor  barrier_s1(BARRIER_S1_PIN);
 MeBarrierSensor  barrier_s2(BARRIER_S2_PIN);
 MeBarrierSensor  barrier_s3(BARRIER_S3_PIN);
 
+// Gesture type
+typedef enum
+{
+  GESTURE_TYPE_NONE,
+  GESTURE_TYPE_LEFT_TO_RIGHT,
+  GESTURE_TYPE_RIGHT_TO_LEFT,
+  GESTURE_TYPE_ALL
+} GESTURE_TYPE_ENUM;
+
 // Obstacle state
 typedef enum
 {
@@ -27,6 +36,16 @@ typedef enum
   S3_FREE_S2_FREE_S1_OBJ,
   S3_FREE_S2_FREE_S1_FREE, 
 }OBSTACLE_STA_ENUM;
+
+// Two sensors trigger time window，unit:ms
+#define GESTURE_DIFF_TIME_MIN 20
+#define GESTURE_DIFF_TIME_MAX 1000
+
+#define GESTURE_DIFF_TIME_OUT 3000
+
+#define PWM_MIN_OFFSET   0
+
+#define GESTURE_MOVE_SPEED  100
 
 // Count on how many times the robot has moved forward
 int count;
@@ -43,8 +62,8 @@ bool encountered_obstacle;
 // Value detecting how many cycles the robot has gone through
 bool cycle_count;
 
-// Value detecting if there is a hand signal
-bool hand_signal;
+// Value storing gesture types
+uint8_t gesture_type;
 
 /**
  * The start point for the extraction state. This function will return once
@@ -66,7 +85,7 @@ bool state_extraction_start(void) {
         cycle_count = 0;
         cycle_limit = 5;
         encountered_obstacle = false;
-        hand_signal = false;
+        gesture_type = 0;
     }
     // Move left if object, move forward if no object, increase count if moved forward
     if (!avoid_object) {
@@ -96,7 +115,7 @@ bool state_extraction_start(void) {
         cycle_count++;
     }
     // Check if a hand signal has been waved and if it has stop function
-    if (hand_signal)
+    if (gesture_type == GESTURE_TYPE_RIGHT_TO_LEFT)
     {
         return true;
     }
@@ -152,4 +171,119 @@ uint8_t read_obstacle_sta(void)
   sta |= barrier_s2.readSensor() << 1 ;
   sta |= barrier_s3.readSensor() << 2 ;  
   return sta;
+}
+
+/**
+ * \par Function
+ *    detect_gesture
+ * \par Description
+ *    This function is used to detect gesture.
+ * \param[in]
+ *    none.
+ * \par Output
+ *    uint8_t
+ * \return
+ *    None
+ * \par Others
+ *    None
+ */
+uint8_t detect_gesture(void)
+{
+  static uint32_t s_sensor1_time = 0;
+  static uint32_t s_sensor2_time = 0;
+  static uint32_t s_sensor3_time = 0;
+  int32_t diff_time;
+  int32_t diff_time_b;
+  static uint32_t s_tick = 0;
+  uint8_t gesture_type = GESTURE_TYPE_NONE;
+
+  // Record sensor trigger time
+  if(!barrier_s1.readSensor())
+  {
+    s_sensor1_time = millis();
+  }
+  if(!barrier_s2.readSensor())
+  {
+    s_sensor2_time = millis();
+  }
+  if(!barrier_s3.readSensor())
+  {
+    s_sensor3_time = millis();
+  }
+
+  // Recognize the type of gesture based on the time difference triggered by the sensor
+  if((s_sensor1_time>0) && (s_sensor3_time>0))  //&& (s_sensor2_time>0) 
+  { 
+    diff_time = s_sensor3_time - s_sensor2_time;
+    diff_time_b = s_sensor2_time - s_sensor1_time;
+    s_sensor1_time = 0;
+    s_sensor2_time = 0;
+    s_sensor3_time = 0;
+    if(!barrier_s1.readSensor() && !barrier_s3.readSensor()) //&& !barrier_s2.readSensor() 
+    {
+      gesture_type = GESTURE_TYPE_ALL;
+    }
+    else if( ((diff_time>GESTURE_DIFF_TIME_MIN) && (diff_time<GESTURE_DIFF_TIME_MAX)) && \
+             ((diff_time_b>GESTURE_DIFF_TIME_MIN) && (diff_time_b<GESTURE_DIFF_TIME_MAX)) )
+    { 
+      gesture_type = GESTURE_TYPE_RIGHT_TO_LEFT;
+    }
+    else if( ((-diff_time>GESTURE_DIFF_TIME_MIN) && (-diff_time<GESTURE_DIFF_TIME_MAX)) && \
+             ((-diff_time_b>GESTURE_DIFF_TIME_MIN) && (-diff_time_b<GESTURE_DIFF_TIME_MAX)))
+    {
+      gesture_type = GESTURE_TYPE_LEFT_TO_RIGHT;
+    }
+  }
+  else if((s_sensor1_time>0) && (s_sensor2_time>0))
+  {
+    diff_time = s_sensor2_time - s_sensor1_time;
+    if((diff_time>GESTURE_DIFF_TIME_MIN) && (diff_time<GESTURE_DIFF_TIME_MAX))
+    {
+      s_sensor1_time = 0;
+      s_sensor2_time = 0;  
+      gesture_type = GESTURE_TYPE_LEFT_TO_RIGHT;
+    }
+    else if((-diff_time>GESTURE_DIFF_TIME_MIN) && (-diff_time<GESTURE_DIFF_TIME_MAX))
+    {
+      s_sensor1_time = 0;
+      s_sensor2_time = 0;  
+      gesture_type = GESTURE_TYPE_RIGHT_TO_LEFT;
+    }
+    else
+    {
+      // Over a period of time, clear the record
+      if(((millis()-s_sensor1_time)>GESTURE_DIFF_TIME_OUT) || ((millis()-s_sensor2_time)>GESTURE_DIFF_TIME_OUT))
+      {
+        s_sensor1_time = 0;
+        s_sensor2_time = 0;  
+      }
+    }
+  }
+  else if((s_sensor2_time>0) && (s_sensor3_time>0))
+  {
+    diff_time = s_sensor2_time - s_sensor3_time;
+    if((diff_time>GESTURE_DIFF_TIME_MIN) && (diff_time<GESTURE_DIFF_TIME_MAX))
+    {
+      s_sensor2_time = 0;
+      s_sensor3_time = 0;
+      gesture_type = GESTURE_TYPE_RIGHT_TO_LEFT;
+    }
+    else if((-diff_time>GESTURE_DIFF_TIME_MIN) && (-diff_time<GESTURE_DIFF_TIME_MAX))
+    {
+      s_sensor2_time = 0;
+      s_sensor3_time = 0;
+      gesture_type = GESTURE_TYPE_LEFT_TO_RIGHT;
+    }
+    else
+    {
+      // Over a period of time, clear the record
+      if(((millis()-s_sensor2_time)>GESTURE_DIFF_TIME_OUT) || ((millis()-s_sensor3_time)>GESTURE_DIFF_TIME_OUT))
+      {
+        s_sensor2_time = 0;
+        s_sensor3_time = 0;  
+      }
+    }
+  }
+
+  return gesture_type;
 }
