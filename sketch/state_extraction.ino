@@ -4,11 +4,29 @@
  * pertaining to this state.
 */
 #include "state_extraction.h"
-
+#include "MeBarrierSensor.h"
 #include <MeMegaPi.h>
 
-// ultrasonic sensor, not sure which port
-MeUltrasonicSensor ultraSensor(PORT_7);
+#define BARRIER_S1_PIN  A6
+#define BARRIER_S2_PIN  A7
+#define BARRIER_S3_PIN  A8
+
+MeBarrierSensor  barrier_s1(BARRIER_S1_PIN);
+MeBarrierSensor  barrier_s2(BARRIER_S2_PIN);
+MeBarrierSensor  barrier_s3(BARRIER_S3_PIN);
+
+// Obstacle state
+typedef enum
+{
+  S3_OBJ_S2_OBJ_S1_OBJ = 0,
+  S3_OBJ_S2_OBJ_S1_FREE,
+  S3_OBJ_S2_FREE_S1_OBJ,
+  S3_OBJ_S2_FREE_S1_FREE,
+  S3_FREE_S2_OBJ_S1_OBJ,
+  S3_FREE_S2_OBJ_S1_FREE,
+  S3_FREE_S2_FREE_S1_OBJ,
+  S3_FREE_S2_FREE_S1_FREE, 
+}OBSTACLE_STA_ENUM;
 
 // Count on how many times the robot has moved forward
 int count;
@@ -94,8 +112,10 @@ bool state_extraction_start(void) {
 * @retval false if no object and moved left
 */
 bool avoid_object(void) {
-    // Check if there is an object 5 cm away
-    if (ultraSensor.distanceCm() > 5)
+    // Check if there is an object detected by a sensor
+    uint8_t sta = read_obstacle_sta();
+
+    if (!(sta == S3_FREE_S2_FREE_S1_FREE))
     {
         // Move forward if no objects
         motor_move_forward(100,500);
@@ -109,4 +129,27 @@ bool avoid_object(void) {
         motor_move_right(100,500);
         return true;
     }
+}
+
+/**
+ * \par Function
+ *    read_obstacle_sta
+ * \par Description
+ *    This function is used to get collision state.
+ * \param[in]
+ *    none.
+ * \par Output
+ *    uint8_t.
+ * \return
+ *    None
+ * \par Others
+ *    None
+ */
+uint8_t read_obstacle_sta(void)
+{
+  uint8_t sta = 0;
+  sta = barrier_s1.readSensor();
+  sta |= barrier_s2.readSensor() << 1 ;
+  sta |= barrier_s3.readSensor() << 2 ;  
+  return sta;
 }
