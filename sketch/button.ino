@@ -3,7 +3,7 @@
 */
 #include "button.h"
 
-#define BUTTON_PIN 2
+#define BUTTON_PIN 7
 
 /**
  * Determines if the button is being pressed.
@@ -20,7 +20,7 @@ bool button_is_pressed(void) {
     if (HIGH == button_state) {
         return true;
     }
-    else  {
+    else {
         return false;
     }
 }

@@ -8,6 +8,8 @@
 #include "state_rendezvous_verify.h"
 #include "led.h"
 #include "motor.h"
+#include "button.h"
+
 #include <MeMegaPi.h>
 
 /**
@@ -23,6 +25,8 @@ enum MakeBlockStates {
 
 // Stores the current state of the MakeBlock
 enum MakeBlockStates g_cur_state;
+
+enum MakeBlockStates g_megapi_mode = STATE_LINE_FOLLOWER_1;
 
 /**
  * Mandatory function that will be called everytime the board is powered up or

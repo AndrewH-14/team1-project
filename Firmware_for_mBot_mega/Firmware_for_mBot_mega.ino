@@ -4,14 +4,14 @@
 * Updated            : huyisi
 * Version            : V47.01.002
 * Date               : 04/29/2021
-* Description        : Firmware for Makeblock Electronic modules with Scratch.  
+* Description        : Firmware for Makeblock Electronic modules with Scratch.
 * License            : CC-BY-SA 3.0
 * Copyright (C) 2013 - 2016 Maker Works Technology Co., Ltd. All right reserved.
 * http://www.makeblock.cc/
 * History:
 * <Author>         <Time>         <Version>        <Descr>
 * huyisi         2021/03/23     47.01.001        build the new.
-* zhngxi         2021/04/29     47.01.002        Fix the collision mode cannot be switched 
+* zhngxi         2021/04/29     47.01.002        Fix the collision mode cannot be switched
 **************************************************************************/
 #include <Arduino.h>
 #include <MeMegaPi.h>
@@ -119,7 +119,7 @@ typedef enum
   SS2_IN_S1_IN = 0,
   SS2_IN_S1_OUT,
   SS2_OUT_S1_IN,
-  SS2_OUT_S1_OUT, 
+  SS2_OUT_S1_OUT,
 }LINE_FOLLOWER_STA_ENUM;
 
 
@@ -139,7 +139,7 @@ typedef enum
   S2_COL_S1_COL = 0,
   S2_COL_S1_FREE,
   S2_FREE_S1_COL,
-  S2_FREE_S1_RREE, 
+  S2_FREE_S1_RREE,
 }COLLISION_STA_ENUM;
 
 
@@ -153,7 +153,7 @@ typedef enum
   S3_FREE_S2_OBJ_S1_OBJ,
   S3_FREE_S2_OBJ_S1_FREE,
   S3_FREE_S2_FREE_S1_OBJ,
-  S3_FREE_S2_FREE_S1_FREE, 
+  S3_FREE_S2_FREE_S1_FREE,
 }OBSTACLE_STA_ENUM;
 
 
@@ -188,7 +188,7 @@ union
 }valShort;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(__AVR_ATmega32U4__) 
+#if defined(__AVR_ATmega32U4__)
   int16_t analogs[12]={A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11};
 #endif
 #if defined(__AVR_ATmega328P__) or defined(__AVR_ATmega168__)
@@ -343,10 +343,10 @@ void move_control(int16_t vx, int16_t vy, int16_t vw)
   back_left_speed = vy - vx + vw;
   back_right_speed = vy + vx - vw;
 
-  motor_foward_left_run(foward_left_speed);    
-  motor_foward_right_run(foward_right_speed);   
-  motor_back_left_run(back_left_speed);   
-  motor_back_right_run(back_right_speed);   
+  motor_foward_left_run(foward_left_speed);
+  motor_foward_right_run(foward_right_speed);
+  motor_back_left_run(back_left_speed);
+  motor_back_right_run(back_right_speed);
 }
 
 //RGB_LED control
@@ -619,7 +619,7 @@ void parseData(void)
         dc_motor.run(0);
 
         /* reset stepper motor driver */
-        
+
         callOK();
       }
       break;
@@ -713,7 +713,7 @@ void sendString(String s)
  *    None
  */
 void sendFloat(float value)
-{ 
+{
   writeSerial(2);
   val.floatVal = value;
   writeSerial(val.byteVal[0]);
@@ -737,7 +737,7 @@ void sendFloat(float value)
  *    None
  */
 void sendLong(long value)
-{ 
+{
   writeSerial(6);
   val.longVal = value;
   writeSerial(val.byteVal[0]);
@@ -810,7 +810,7 @@ int16_t readShort(int16_t idx)
 {
   valShort.byteVal[0] = readBuffer(idx);
   valShort.byteVal[1] = readBuffer(idx+1);
-  return valShort.shortVal; 
+  return valShort.shortVal;
 }
 
 /**
@@ -946,7 +946,7 @@ void runModule(uint8_t device)
         dc_motor.run(speed);
       }
       break;
-    
+
     case COMMON_COMMONCMD:
       {
         uint8_t subcmd = port;
@@ -955,7 +955,7 @@ void runModule(uint8_t device)
         {
           // Stop();
           move_control(0, 0, 0);
-          if((cmd_data == OBSTACLE_MODE) || (cmd_data == LINE_FOLLOW_MODE)) 
+          if((cmd_data == OBSTACLE_MODE) || (cmd_data == LINE_FOLLOW_MODE))
           {
             megapi_mode = cmd_data;
           }
@@ -967,7 +967,7 @@ void runModule(uint8_t device)
         }
       }
       break;
-    
+
     case DIGITAL:
       {
         pinMode(pin,OUTPUT);
@@ -985,7 +985,7 @@ void runModule(uint8_t device)
 
     case TIMER:
       {
-        lastTime = millis()/1000.0; 
+        lastTime = millis()/1000.0;
       }
       break;
     case CARE_CONTROL:
@@ -1039,7 +1039,7 @@ void readSensor(uint8_t device)
   writeHead();
   writeSerial(command_index);
   switch(device)
-  {  
+  {
     case VERSION:
       {
         sendString(mVersion);
@@ -1065,13 +1065,13 @@ void readSensor(uint8_t device)
         sendLong(pulseIn(pin,HIGH,pw));
       }
       break;
-    
+
     case TIMER:
       {
         sendFloat((float)currentTime);
       }
       break;
-  
+
     case COMMON_COMMONCMD:
       {
         uint8_t subcmd = port;
@@ -1081,7 +1081,7 @@ void readSensor(uint8_t device)
         }
       }
       break;
-    
+
     case SINGLE_LINE_FOLLOWER:
       {
         pinMode(pin,INPUT);
@@ -1130,7 +1130,7 @@ uint8_t read_lineflower_sta(void)
   uint8_t sta = 0;
   sta = line_follower_s1.readSensor();
   sta |= line_follower_s2.readSensor() << 1 ;
-  
+
   return sta;
 }
 
@@ -1185,8 +1185,8 @@ void line_model(void)
       else if(line_follow_sta_value > 0) line_follow_sta_value = MAX_VAL;
       else line_follow_sta_value = 0;
       diff_val = line_follow_sta_value;
-      break;    
-    
+      break;
+
     default:
       break;
   }
@@ -1204,7 +1204,7 @@ void line_model(void)
   vw = diff_val * TURN_SPEED;
 
   move_control(vx, vy, vw);
-  delay(2); 
+  delay(2);
 }
 
 
@@ -1248,20 +1248,20 @@ uint8_t detect_gesture(void)
   }
 
   // Recognize the type of gesture based on the time difference triggered by the sensor
-  if((s_sensor1_time>0) && (s_sensor3_time>0))  //&& (s_sensor2_time>0) 
-  { 
+  if((s_sensor1_time>0) && (s_sensor3_time>0))  //&& (s_sensor2_time>0)
+  {
     diff_time = s_sensor3_time - s_sensor2_time;
     diff_time_b = s_sensor2_time - s_sensor1_time;
     s_sensor1_time = 0;
     s_sensor2_time = 0;
     s_sensor3_time = 0;
-    if(!barrier_s1.readSensor() && !barrier_s3.readSensor()) //&& !barrier_s2.readSensor() 
+    if(!barrier_s1.readSensor() && !barrier_s3.readSensor()) //&& !barrier_s2.readSensor()
     {
       gesture_type = GESTURE_TYPE_ALL;
     }
     else if( ((diff_time>GESTURE_DIFF_TIME_MIN) && (diff_time<GESTURE_DIFF_TIME_MAX)) && \
              ((diff_time_b>GESTURE_DIFF_TIME_MIN) && (diff_time_b<GESTURE_DIFF_TIME_MAX)) )
-    { 
+    {
       gesture_type = GESTURE_TYPE_RIGHT_TO_LEFT;
     }
     else if( ((-diff_time>GESTURE_DIFF_TIME_MIN) && (-diff_time<GESTURE_DIFF_TIME_MAX)) && \
@@ -1276,13 +1276,13 @@ uint8_t detect_gesture(void)
     if((diff_time>GESTURE_DIFF_TIME_MIN) && (diff_time<GESTURE_DIFF_TIME_MAX))
     {
       s_sensor1_time = 0;
-      s_sensor2_time = 0;  
+      s_sensor2_time = 0;
       gesture_type = GESTURE_TYPE_LEFT_TO_RIGHT;
     }
     else if((-diff_time>GESTURE_DIFF_TIME_MIN) && (-diff_time<GESTURE_DIFF_TIME_MAX))
     {
       s_sensor1_time = 0;
-      s_sensor2_time = 0;  
+      s_sensor2_time = 0;
       gesture_type = GESTURE_TYPE_RIGHT_TO_LEFT;
     }
     else
@@ -1291,7 +1291,7 @@ uint8_t detect_gesture(void)
       if(((millis()-s_sensor1_time)>GESTURE_DIFF_TIME_OUT) || ((millis()-s_sensor2_time)>GESTURE_DIFF_TIME_OUT))
       {
         s_sensor1_time = 0;
-        s_sensor2_time = 0;  
+        s_sensor2_time = 0;
       }
     }
   }
@@ -1316,7 +1316,7 @@ uint8_t detect_gesture(void)
       if(((millis()-s_sensor2_time)>GESTURE_DIFF_TIME_OUT) || ((millis()-s_sensor3_time)>GESTURE_DIFF_TIME_OUT))
       {
         s_sensor2_time = 0;
-        s_sensor3_time = 0;  
+        s_sensor3_time = 0;
       }
     }
   }
@@ -1351,9 +1351,9 @@ void gesture_model(void)
     init_led_flag = true;
     new_rgbled_show_all(0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL,0);
   }
-  
+
   gesture_type = detect_gesture();
-  
+
   // Printout gesture type
   if(gesture_type == GESTURE_TYPE_LEFT_TO_RIGHT)
   {
@@ -1378,7 +1378,7 @@ void gesture_model(void)
     move_control(0, -1 * GESTURE_MOVE_SPEED, 0);
     s_movement_start_time = millis();
     // Serial.println("gesture: all");
-  } 
+  }
 
   if((move_type==1) || (move_type==2))
   {
@@ -1391,7 +1391,7 @@ void gesture_model(void)
     }
   }
   else if(move_type==3)
-  {  
+  {
     if((millis() - s_movement_start_time) > 200)
     {
       new_rgbled_show_all(0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL,0);
@@ -1423,7 +1423,7 @@ uint8_t read_collision_sta(void)
   uint8_t sta = 0;
   sta = collision_s1.readSensor();
   sta |= collision_s2.readSensor() << 1 ;
-  
+
   return sta;
 }
 
@@ -1447,7 +1447,7 @@ uint8_t read_obstacle_sta(void)
   uint8_t sta = 0;
   sta = barrier_s1.readSensor();
   sta |= barrier_s2.readSensor() << 1 ;
-  sta |= barrier_s3.readSensor() << 2 ;  
+  sta |= barrier_s3.readSensor() << 2 ;
   return sta;
 }
 
@@ -1501,7 +1501,7 @@ void obstacle_model(void)
         s_back_or_turn_flag = 1;
       }
       break;
-    
+
     //turn left
     case S3_OBJ_S2_FREE_S1_FREE:
     case S3_OBJ_S2_OBJ_S1_FREE:
@@ -1537,8 +1537,8 @@ void obstacle_model(void)
         s_vy = OBSTACLE_FORWARD_SPEED;
         s_vw = 0;
       }
-      break;    
-    
+      break;
+
     default:
       break;
   }
@@ -1600,25 +1600,25 @@ void switch_mode(void)
         {
           megapi_mode = BLUETOOTH_MODE;
         }
-        
+
         if(megapi_mode == BLUETOOTH_MODE)
         {
           new_rgbled_show_all(0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL,0);
         }
         else if(megapi_mode == OBSTACLE_MODE)
         {
-          new_rgbled_show_all(0,RGB_LOW_VAL,RGB_LOW_VAL,0,RGB_LOW_VAL,RGB_LOW_VAL,0);         
+          new_rgbled_show_all(0,RGB_LOW_VAL,RGB_LOW_VAL,0,RGB_LOW_VAL,RGB_LOW_VAL,0);
         }
         else if(megapi_mode == LINE_FOLLOW_MODE)
         {
-          new_rgbled_show_all(0,0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL);  
+          new_rgbled_show_all(0,0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL);
         }
 
         s_setted_flag = 1;
       }
 
       break;
-    
+
     //mode--
     case S2_FREE_S1_COL:
       if(millis() - s_start_time > 1000 && s_setted_flag == 0)
@@ -1638,11 +1638,11 @@ void switch_mode(void)
         }
         else if(megapi_mode == OBSTACLE_MODE)
         {
-          new_rgbled_show_all(0,RGB_LOW_VAL,RGB_LOW_VAL,0,RGB_LOW_VAL,RGB_LOW_VAL,0);         
+          new_rgbled_show_all(0,RGB_LOW_VAL,RGB_LOW_VAL,0,RGB_LOW_VAL,RGB_LOW_VAL,0);
         }
         else if(megapi_mode == LINE_FOLLOW_MODE)
         {
-          new_rgbled_show_all(0,0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL);  
+          new_rgbled_show_all(0,0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL);
         }
 
         s_setted_flag = 1;
@@ -1652,8 +1652,8 @@ void switch_mode(void)
     case S2_FREE_S1_RREE:
       s_start_time = millis();
 
-      break;    
-    
+      break;
+
     default:
       break;
   }
@@ -1679,7 +1679,7 @@ void switch_mode(void)
  * \par Output
  *    None
  * \return
- *    Is there a valid command 
+ *    Is there a valid command
  * \par Others
  *    None
  */
@@ -1706,7 +1706,7 @@ boolean read_serial(void)
       {
         if(index == 2)
         {
-          dataLen = c; 
+          dataLen = c;
         }
         else if(index > 2)
         {
@@ -1718,13 +1718,13 @@ boolean read_serial(void)
     index++;
     if(index > 51)
     {
-      index=0; 
+      index=0;
       isStart=false;
     }
     if(isStart && (dataLen == 0) && (index > 3))
-    { 
+    {
       isStart = false;
-      parseData(); 
+      parseData();
       index=0;
     }
     return result;
@@ -1805,7 +1805,7 @@ void loop()
       {
         if(index == 2)
         {
-          dataLen = c; 
+          dataLen = c;
         }
         else if(index > 2)
         {
@@ -1817,13 +1817,13 @@ void loop()
     index++;
     if(index > 51)
     {
-      index=0; 
+      index=0;
       isStart=false;
     }
     if(isStart && (dataLen == 0) && (index > 3))
-    { 
+    {
       isStart = false;
-      parseData(); 
+      parseData();
       index=0;
     }
     readSerial();

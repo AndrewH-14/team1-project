@@ -32,8 +32,8 @@ bool hand_signal;
  * The start point for the extraction state. This function will return once
  * the hand signal has been detected.
  *
- * The extraction state functions by travelling in a growing square that grows at 
- * a slower rate if obstacles are detected in order to increase likelihood all obstacles are 
+ * The extraction state functions by travelling in a growing square that grows at
+ * a slower rate if obstacles are detected in order to increase likelihood all obstacles are
  * detected. The robot will explore a growing square until the mode changes.
  *
  * @retval true  The hand signal has been detected.
