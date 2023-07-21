@@ -51,7 +51,7 @@ enum LineFollowingStates get_state(void) {
 */
 bool state_line_follower_start(void) {
     enum LineFollowingStates sensor_state = get_state();
-    while (true) {
+    while (!button_is_pressed()) {
         sensor_state = get_state();
         switch (sensor_state) {
             case SEN1_IN_SEN2_IN:
@@ -67,7 +67,6 @@ bool state_line_follower_start(void) {
                 motor_turn_right(100, 50);
                 break;
             case SEN1_OUT_SEN2_OUT:
-            led_set_color(0, 255, 0);
             default:
                 break;
         }
