@@ -8,7 +8,7 @@
 #include "state_rendezvous_verify.h"
 #include "led.h"
 #include "motor.h"
-#include "src/MeNewRGBLed.h"
+#include "button.h"
 
 #include <MeMegaPi.h>
 
@@ -26,13 +26,13 @@ enum MakeBlockStates {
 // Stores the current state of the MakeBlock
 enum MakeBlockStates g_cur_state;
 
+enum MakeBlockStates g_megapi_mode = STATE_LINE_FOLLOWER_1;
+
 /**
  * Mandatory function that will be called everytime the board is powered up or
  * reset.
 */
 void setup(void) {
-    // Call any setup functions for peripherals
-    void setup_motor();
     // Set MakeBlock to the initial state
     g_cur_state = STATE_LINE_FOLLOWER_1;
 }
@@ -69,6 +69,7 @@ void setup(void) {
 void loop(void) {
     switch (g_cur_state) {
         case STATE_LINE_FOLLOWER_1:
+            // LEDs will be blue during this state
             led_set_color(0, 0, 255);
             // Returns once the button is pressed
             if (state_line_follower_start()) {
@@ -76,22 +77,25 @@ void loop(void) {
             }
             break;
         case STATE_EXTRACTION:
-            // Returns once the hand signal is detected
+            // LEDs will be yellow during this state
             led_set_color(255, 255, 0);
+            // Returns once the hand signal is detected
             if (state_extraction_start()) {
                 g_cur_state = STATE_RENDEZVOUS_VERIFY;
             }
             break;
         case STATE_RENDEZVOUS_VERIFY:
-            // Returns once sensitive data has been recovered
+            // LEDS will be purple during this state
             led_set_color(255, 0, 255);
+            // Returns once sensitive data has been recovered
             if (state_rendezvous_verify_start()) {
                 g_cur_state = STATE_LINE_FOLLOWER_2;
             }
             break;
         case STATE_LINE_FOLLOWER_2:
-            // Returns once the line is not detected
+            // LEDS will be cyan during this state
             led_set_color(0, 255, 255);
+            // Returns once the line is not detected
             if (state_line_follower_start()) {
                 g_cur_state = STATE_DONE;
             }
@@ -102,6 +106,7 @@ void loop(void) {
             break;
         default:
             // Set LED to red to signal an error
+            // NOTE: This state should never be reached
             led_set_color(255, 0, 0);
             break;
     }
