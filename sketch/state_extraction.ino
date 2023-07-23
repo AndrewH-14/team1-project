@@ -134,7 +134,7 @@ bool avoid_object(void) {
     // Check if there is an object detected by a sensor
     uint8_t sta = read_obstacle_sta();
 
-    if (!(sta == S3_FREE_S2_FREE_S1_FREE))
+    if ((sta == S3_FREE_S2_FREE_S1_FREE))
     {
         // Move forward if no objects
         motor_move_forward(100,500);
