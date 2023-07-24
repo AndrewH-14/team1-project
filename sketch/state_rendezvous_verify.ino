@@ -68,11 +68,96 @@ enum RendezvousStates cur_state;
 bool state_rendezvous_verify_start(void) {
 
     cur_state = STATE_1;
+    delay(3000); // 3 second pause
+    led_set_color(0, 255, 0); // Flash Green to verify correct robot
     gesture_model();
 
     return true;
 }
 
+/**
+ * This function utilizes the output from detect_gesture and commands what to do.
+ */
+void gesture_model(void)
+{
+    uint8_t gesture_type;
+    static uint8_t init_led_flag = false;
+
+    if(init_led_flag == false) {
+    init_led_flag = true;
+    new_rgbled_show_all(0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL,0);
+    }
+
+  // State Machine that checks and validates hand signals.
+  while (true) {
+    // TODO: LED PULSE TO SIGNAL HAND SIGNAL READ MODE
+    led_set_color(255, 0, 255); // Purple LED, but needs Pulse Feature
+    gesture_type = detect_gesture();
+    switch (cur_state) {
+        case STATE_1:
+          // Left
+          if (gesture_type == GESTURE_TYPE_RIGHT_TO_LEFT) {
+            cur_state = STATE_2;
+          }
+          else if (gesture_type == GESTURE_TYPE_NONE) {
+            continue;
+          }
+          // If incorrect, Flash LED to signal unsuccessful
+          else {
+            cur_state = STATE_1;
+            led_set_color(255, 0, 0); // Flash red
+          }
+          break;
+        case STATE_2:
+          // Right
+          if (gesture_type == GESTURE_TYPE_LEFT_TO_RIGHT) {
+            cur_state = STATE_3;
+          }
+          else if (gesture_type == GESTURE_TYPE_NONE) {
+            continue;
+          }
+          else {
+            cur_state = STATE_1;
+            led_set_color(255, 0, 0); // Flash Red
+          }
+          break;
+        case STATE_3:
+          // Left
+          if (gesture_type == GESTURE_TYPE_RIGHT_TO_LEFT) {
+            cur_state = STATE_4;
+          }
+          else if (gesture_type == GESTURE_TYPE_NONE) {
+            continue;
+          }
+        else {
+          cur_state = STATE_1;
+          led_set_color(255, 0, 0); // Flash Red
+        }
+          break;
+        case STATE_4:
+          // Left
+          if (gesture_type == GESTURE_TYPE_RIGHT_TO_LEFT) {
+            cur_state = STATE_DONE;
+          }
+          else if (gesture_type == GESTURE_TYPE_NONE) {
+            continue;
+          }
+          else {
+          cur_state = STATE_1;
+          led_set_color(255, 0, 0); // Flash Red
+          }
+          break;
+        case STATE_DONE:
+          // Flashes Green LED to confirm success
+          led_set_color(0, 255, 0);
+          return;
+        default:
+          // Set LED to red to signal an error
+          led_set_color(255, 0, 0);
+          break;
+    }
+  }
+}
 
 /**
  * Function that will determine and return the specific hand signal detected
@@ -177,94 +262,4 @@ uint8_t detect_gesture(void)
   }
 
   return gesture_type;
-}
-
-
-/**
- * This function utilizes the output from detect_gesture and commands what to do.
- */
-void gesture_model(void)
-{
-    uint8_t gesture_type;
-    static uint8_t move_type = 0;
-    static uint8_t init_led_flag = false;
-    static uint32_t s_movement_start_time = 0;
-
-    if(init_led_flag == false) {
-    init_led_flag = true;
-    new_rgbled_show_all(0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL,0);
-    }
-
-    gesture_type = detect_gesture();
-
-    switch (cur_state) {
-        case STATE_1:
-
-            break;
-        case STATE_2:
-            //
-            break;
-        case STATE_3:
-            //
-            break;
-        case STATE_4:
-            //
-            break;
-        case STATE_DONE:
-            //
-            break;
-        default:
-            // Set LED to red to signal an error
-            led_set_color(255, 0, 0);
-            break;
-    }
-
-
-    // Printout gesture type
-    if(gesture_type == GESTURE_TYPE_LEFT_TO_RIGHT)
-    {
-    new_rgbled_show_all(0,0,RGB_HIGH_VAL,0,0,RGB_HIGH_VAL,0);
-    move_type = 1;
-    s_movement_start_time = millis();
-    move_control(GESTURE_MOVE_SPEED, 0, 0);
-    // Serial.println("gesture: left to right");
-    }
-    else if(gesture_type == GESTURE_TYPE_RIGHT_TO_LEFT)
-    {
-    new_rgbled_show_all(0,0,RGB_HIGH_VAL,0,0,RGB_HIGH_VAL,0);
-    move_type = 2;
-    move_control(-1 * GESTURE_MOVE_SPEED, 0, 0);
-    s_movement_start_time = millis();
-    // Serial.println("gesture: right to left");
-    }
-    else if(gesture_type == GESTURE_TYPE_ALL)
-    {
-    new_rgbled_show_all(0,0,RGB_HIGH_VAL,0,0,RGB_HIGH_VAL,0);
-    move_type = 3;
-    move_control(0, -1 * GESTURE_MOVE_SPEED, 0);
-    s_movement_start_time = millis();
-    // Serial.println("gesture: all");
-    }
-
-    if((move_type==1) || (move_type==2))
-    {
-    if((millis() - s_movement_start_time) > 1000)
-    {
-        new_rgbled_show_all(0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL,0);
-        // stop();
-        move_control(0, 0, 0);
-        move_type = 0;
-    }
-    }
-    else if(move_type==3)
-    {
-    if((millis() - s_movement_start_time) > 200)
-    {
-        new_rgbled_show_all(0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL,0);
-        // stop();
-        move_control(0, 0, 0);
-        move_type = 0;
-    }
-    }
-
 }
