@@ -4,7 +4,7 @@
  * pertaining to this state.
 */
 #include "state_extraction.h"
-#include "MeBarrierSensor.h"
+#include "src/MeBarrierSensor.h"
 #include <MeMegaPi.h>
 
 #define BARRIER_S1_PIN  A6
@@ -34,7 +34,7 @@ typedef enum
   S3_FREE_S2_OBJ_S1_OBJ,
   S3_FREE_S2_OBJ_S1_FREE,
   S3_FREE_S2_FREE_S1_OBJ,
-  S3_FREE_S2_FREE_S1_FREE, 
+  S3_FREE_S2_FREE_S1_FREE,
 }OBSTACLE_STA_ENUM;
 
 // Two sensors trigger time window，unit:ms
@@ -116,7 +116,7 @@ bool state_extraction_start(void) {
         cycle_count++;
     }
     gesture_type = detect_gesture();
-    
+
     // Check if a hand signal has been waved and if it has stop function
     if (gesture_type != GESTURE_TYPE_RIGHT_TO_LEFT)
     {
@@ -175,7 +175,7 @@ uint8_t read_obstacle_sta(void)
   uint8_t sta = 0;
   sta = barrier_s1.readSensor();
   sta |= barrier_s2.readSensor() << 1 ;
-  sta |= barrier_s3.readSensor() << 2 ;  
+  sta |= barrier_s3.readSensor() << 2 ;
   return sta;
 }
 
@@ -218,20 +218,20 @@ uint8_t detect_gesture(void)
   }
 
   // Recognize the type of gesture based on the time difference triggered by the sensor
-  if((s_sensor1_time>0) && (s_sensor3_time>0))  //&& (s_sensor2_time>0) 
-  { 
+  if((s_sensor1_time>0) && (s_sensor3_time>0))  //&& (s_sensor2_time>0)
+  {
     diff_time = s_sensor3_time - s_sensor2_time;
     diff_time_b = s_sensor2_time - s_sensor1_time;
     s_sensor1_time = 0;
     s_sensor2_time = 0;
     s_sensor3_time = 0;
-    if(!barrier_s1.readSensor() && !barrier_s3.readSensor()) //&& !barrier_s2.readSensor() 
+    if(!barrier_s1.readSensor() && !barrier_s3.readSensor()) //&& !barrier_s2.readSensor()
     {
       gesture_type = GESTURE_TYPE_ALL;
     }
     else if( ((diff_time>GESTURE_DIFF_TIME_MIN) && (diff_time<GESTURE_DIFF_TIME_MAX)) && \
              ((diff_time_b>GESTURE_DIFF_TIME_MIN) && (diff_time_b<GESTURE_DIFF_TIME_MAX)) )
-    { 
+    {
       gesture_type = GESTURE_TYPE_RIGHT_TO_LEFT;
     }
     else if( ((-diff_time>GESTURE_DIFF_TIME_MIN) && (-diff_time<GESTURE_DIFF_TIME_MAX)) && \
@@ -246,13 +246,13 @@ uint8_t detect_gesture(void)
     if((diff_time>GESTURE_DIFF_TIME_MIN) && (diff_time<GESTURE_DIFF_TIME_MAX))
     {
       s_sensor1_time = 0;
-      s_sensor2_time = 0;  
+      s_sensor2_time = 0;
       gesture_type = GESTURE_TYPE_LEFT_TO_RIGHT;
     }
     else if((-diff_time>GESTURE_DIFF_TIME_MIN) && (-diff_time<GESTURE_DIFF_TIME_MAX))
     {
       s_sensor1_time = 0;
-      s_sensor2_time = 0;  
+      s_sensor2_time = 0;
       gesture_type = GESTURE_TYPE_RIGHT_TO_LEFT;
     }
     else
@@ -261,7 +261,7 @@ uint8_t detect_gesture(void)
       if(((millis()-s_sensor1_time)>GESTURE_DIFF_TIME_OUT) || ((millis()-s_sensor2_time)>GESTURE_DIFF_TIME_OUT))
       {
         s_sensor1_time = 0;
-        s_sensor2_time = 0;  
+        s_sensor2_time = 0;
       }
     }
   }
@@ -286,7 +286,7 @@ uint8_t detect_gesture(void)
       if(((millis()-s_sensor2_time)>GESTURE_DIFF_TIME_OUT) || ((millis()-s_sensor3_time)>GESTURE_DIFF_TIME_OUT))
       {
         s_sensor2_time = 0;
-        s_sensor3_time = 0;  
+        s_sensor3_time = 0;
       }
     }
   }
