@@ -6,26 +6,7 @@
 #include "state_rendezvous_verify.h"
 #include <MeMegaPi.h>
 #include "src/MeBarrierSensor.h"
-
-
-// Two sensors trigger time window，unit:ms
-#define GESTURE_DIFF_TIME_MIN 20
-#define GESTURE_DIFF_TIME_MAX 1000
-
-#define GESTURE_DIFF_TIME_OUT 3000
-
-#define PWM_MIN_OFFSET   0
-
-#define GESTURE_MOVE_SPEED  100
-
-// Gesture type
-typedef enum
-{
-  GESTURE_TYPE_NONE,
-  GESTURE_TYPE_LEFT_TO_RIGHT,
-  GESTURE_TYPE_RIGHT_TO_LEFT,
-  GESTURE_TYPE_ALL
-} GESTURE_TYPE_ENUM;
+#include "gesture.h"
 
 /**
  * All possible states for rendezvous mode
@@ -35,7 +16,7 @@ enum RendezvousStates {
     STATE_2,
     STATE_3,
     STATE_4,
-    STATE_DONE
+    STATE_REND_DONE
 };
 
 // Stores the current state of the MakeBlock
@@ -80,13 +61,7 @@ bool state_rendezvous_verify_start(void) {
  */
 void gesture_model(void)
 {
-    uint8_t gesture_type;
-    static uint8_t init_led_flag = false;
-
-    if(init_led_flag == false) {
-    init_led_flag = true;
-    new_rgbled_show_all(0,0,RGB_LOW_VAL,0,0,RGB_LOW_VAL,0);
-    }
+  uint8_t gesture_type;
 
   // State Machine that checks and validates hand signals.
   while (true) {
@@ -137,7 +112,7 @@ void gesture_model(void)
         case STATE_4:
           // Left
           if (gesture_type == GESTURE_TYPE_RIGHT_TO_LEFT) {
-            cur_state = STATE_DONE;
+            cur_state = STATE_REND_DONE;
           }
           else if (gesture_type == GESTURE_TYPE_NONE) {
             continue;
@@ -147,7 +122,7 @@ void gesture_model(void)
           led_set_color(255, 0, 0); // Flash Red
           }
           break;
-        case STATE_DONE:
+        case STATE_REND_DONE:
           // Flashes Green LED to confirm success
           led_set_color(0, 255, 0);
           return;
@@ -157,109 +132,4 @@ void gesture_model(void)
           break;
     }
   }
-}
-
-/**
- * Function that will determine and return the specific hand signal detected
-*/
-uint8_t detect_gesture(void)
-{
-  static uint32_t s_sensor1_time = 0;
-  static uint32_t s_sensor2_time = 0;
-  static uint32_t s_sensor3_time = 0;
-  int32_t diff_time;
-  int32_t diff_time_b;
-  static uint32_t s_tick = 0;
-  uint8_t gesture_type = GESTURE_TYPE_NONE;
-
-  // Record sensor trigger time
-  if(!
-  .readSensor())
-  {
-    s_sensor1_time = millis();
-  }
-  if(!barrier_s2.readSensor())
-  {
-    s_sensor2_time = millis();
-  }
-  if(!barrier_s3.readSensor())
-  {
-    s_sensor3_time = millis();
-  }
-
-  // Recognize the type of gesture based on the time difference triggered by the sensor
-  if((s_sensor1_time>0) && (s_sensor3_time>0))  //&& (s_sensor2_time>0)
-  {
-    diff_time = s_sensor3_time - s_sensor2_time;
-    diff_time_b = s_sensor2_time - s_sensor1_time;
-    s_sensor1_time = 0;
-    s_sensor2_time = 0;
-    s_sensor3_time = 0;
-    if(!barrier_s1.readSensor() && !barrier_s3.readSensor()) //&& !barrier_s2.readSensor()
-    {
-      gesture_type = GESTURE_TYPE_ALL;
-    }
-    else if( ((diff_time>GESTURE_DIFF_TIME_MIN) && (diff_time<GESTURE_DIFF_TIME_MAX)) && \
-             ((diff_time_b>GESTURE_DIFF_TIME_MIN) && (diff_time_b<GESTURE_DIFF_TIME_MAX)) )
-    {
-      gesture_type = GESTURE_TYPE_RIGHT_TO_LEFT;
-    }
-    else if( ((-diff_time>GESTURE_DIFF_TIME_MIN) && (-diff_time<GESTURE_DIFF_TIME_MAX)) && \
-             ((-diff_time_b>GESTURE_DIFF_TIME_MIN) && (-diff_time_b<GESTURE_DIFF_TIME_MAX)))
-    {
-      gesture_type = GESTURE_TYPE_LEFT_TO_RIGHT;
-    }
-  }
-  else if((s_sensor1_time>0) && (s_sensor2_time>0))
-  {
-    diff_time = s_sensor2_time - s_sensor1_time;
-    if((diff_time>GESTURE_DIFF_TIME_MIN) && (diff_time<GESTURE_DIFF_TIME_MAX))
-    {
-      s_sensor1_time = 0;
-      s_sensor2_time = 0;
-      gesture_type = GESTURE_TYPE_LEFT_TO_RIGHT;
-    }
-    else if((-diff_time>GESTURE_DIFF_TIME_MIN) && (-diff_time<GESTURE_DIFF_TIME_MAX))
-    {
-      s_sensor1_time = 0;
-      s_sensor2_time = 0;
-      gesture_type = GESTURE_TYPE_RIGHT_TO_LEFT;
-    }
-    else
-    {
-      // Over a period of time, clear the record
-      if(((millis()-s_sensor1_time)>GESTURE_DIFF_TIME_OUT) || ((millis()-s_sensor2_time)>GESTURE_DIFF_TIME_OUT))
-      {
-        s_sensor1_time = 0;
-        s_sensor2_time = 0;
-      }
-    }
-  }
-  else if((s_sensor2_time>0) && (s_sensor3_time>0))
-  {
-    diff_time = s_sensor2_time - s_sensor3_time;
-    if((diff_time>GESTURE_DIFF_TIME_MIN) && (diff_time<GESTURE_DIFF_TIME_MAX))
-    {
-      s_sensor2_time = 0;
-      s_sensor3_time = 0;
-      gesture_type = GESTURE_TYPE_RIGHT_TO_LEFT;
-    }
-    else if((-diff_time>GESTURE_DIFF_TIME_MIN) && (-diff_time<GESTURE_DIFF_TIME_MAX))
-    {
-      s_sensor2_time = 0;
-      s_sensor3_time = 0;
-      gesture_type = GESTURE_TYPE_LEFT_TO_RIGHT;
-    }
-    else
-    {
-      // Over a period of time, clear the record
-      if(((millis()-s_sensor2_time)>GESTURE_DIFF_TIME_OUT) || ((millis()-s_sensor3_time)>GESTURE_DIFF_TIME_OUT))
-      {
-        s_sensor2_time = 0;
-        s_sensor3_time = 0;
-      }
-    }
-  }
-
-  return gesture_type;
 }

@@ -35,6 +35,7 @@ enum MakeBlockStates g_megapi_mode = STATE_LINE_FOLLOWER_1;
 void setup(void) {
     // Set MakeBlock to the initial state
     g_cur_state = STATE_LINE_FOLLOWER_1;
+    motor_move_forward(100, 500);
 }
 
 /**
