@@ -113,7 +113,7 @@ bool avoid_object(void) {
     if ((sta == S3_FREE_S2_FREE_S1_FREE))
     {
         // Move forward if no objects
-        motor_move_forward(100,300);
+        motor_move_forward(100,250);
         return false;
     }
     // If object in front move right
@@ -121,9 +121,9 @@ bool avoid_object(void) {
     {
         encountered_obstacle = true;
         // Move left until no detection of object
-        motor_move_backward(100, 300);
+        motor_move_backward(100, 500);
         motor_turn_right(100,500);
-        motor_move_forward(100,500);
+        motor_move_forward(100,250);
         motor_turn_left(100,500);
         return true;
     }
