@@ -92,7 +92,7 @@ bool state_extraction_start(void) {
     gesture_type = detect_gesture();
 
     // Check if a hand signal has been waved and if it has stop function
-    if (gesture_type != GESTURE_TYPE_RIGHT_TO_LEFT)
+    if (gesture_type == GESTURE_TYPE_RIGHT_TO_LEFT)
     {
         return true;
     }
