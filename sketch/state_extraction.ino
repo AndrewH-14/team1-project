@@ -61,7 +61,6 @@ bool state_extraction_start(void) {
         encountered_obstacle = false;
         gesture_type = 0;
     }
-    avoid_object();
     // Move left if object, move forward if no object, increase count if moved forward
     if (!avoid_object()) {
         count++;
@@ -110,6 +109,7 @@ bool state_extraction_start(void) {
 bool avoid_object(void) {
     // Check if there is an object detected by a sensor
     uint8_t sta = read_obstacle_sta();
+    gesture_type = detect_gesture();
     if ((sta == S3_FREE_S2_FREE_S1_FREE))
     {
         // Move forward if no objects
