@@ -84,7 +84,7 @@ enum MakeBlockStates {
     MB_STATE_RENDEZVOUS_VERIFY,
     MB_STATE_LINE_FOLLOWER_2,
     MB_STATE_DONE
-} g_cur_state = MB_STATE_LINE_FOLLOWER_1;
+};
 // Value detecting if an obstacle has been detected this exploration cycle
 bool encountered_obstacle;
 
@@ -116,8 +116,7 @@ void led_set_color(uint8_t r, uint8_t g, uint8_t b) {
  * \par Others
  *    None
  */
-uint8_t detect_gesture(void)
-{
+uint8_t detect_gesture(void) {
     static uint32_t s_sensor1_time = 0;
     static uint32_t s_sensor2_time = 0;
     static uint32_t s_sensor3_time = 0;
@@ -125,31 +124,24 @@ uint8_t detect_gesture(void)
     int32_t diff_time_b;
     static uint32_t s_tick = 0;
     enum GestureTypes gesture_type = GESTURE_TYPE_NONE;
-
     // Record sensor trigger time
-    if(!barrier_s1.readSensor())
-    {
+    if(!barrier_s1.readSensor()) {
         s_sensor1_time = millis();
     }
-    if(!barrier_s2.readSensor())
-    {
+    if(!barrier_s2.readSensor()) {
         s_sensor2_time = millis();
     }
-    if(!barrier_s3.readSensor())
-    {
+    if(!barrier_s3.readSensor()) {
         s_sensor3_time = millis();
     }
-
     // Recognize the type of gesture based on the time difference triggered by the sensor
-    if((s_sensor1_time>0) && (s_sensor3_time>0))  //&& (s_sensor2_time>0)
-    {
+    if((s_sensor1_time>0) && (s_sensor3_time>0)) { //&& (s_sensor2_time>0)
         diff_time = s_sensor3_time - s_sensor2_time;
         diff_time_b = s_sensor2_time - s_sensor1_time;
         s_sensor1_time = 0;
         s_sensor2_time = 0;
         s_sensor3_time = 0;
-        if(!barrier_s1.readSensor() && !barrier_s3.readSensor()) //&& !barrier_s2.readSensor()
-        {
+        if(!barrier_s1.readSensor() && !barrier_s3.readSensor()) { //&& !barrier_s2.readSensor()
             gesture_type = GESTURE_TYPE_ALL;
         }
         else if( ((diff_time>GESTURE_DIFF_TIME_MIN) && (diff_time<GESTURE_DIFF_TIME_MAX)) && \
@@ -161,8 +153,7 @@ uint8_t detect_gesture(void)
             gesture_type = GESTURE_TYPE_LEFT_TO_RIGHT;
         }
     }
-    else if((s_sensor1_time>0) && (s_sensor2_time>0))
-    {
+    else if((s_sensor1_time>0) && (s_sensor2_time>0)) {
         diff_time = s_sensor2_time - s_sensor1_time;
         if((diff_time>GESTURE_DIFF_TIME_MIN) && (diff_time<GESTURE_DIFF_TIME_MAX)) {
             s_sensor1_time = 0;
@@ -182,8 +173,7 @@ uint8_t detect_gesture(void)
             }
         }
     }
-    else if((s_sensor2_time>0) && (s_sensor3_time>0))
-    {
+    else if((s_sensor2_time>0) && (s_sensor3_time>0)) {
         diff_time = s_sensor2_time - s_sensor3_time;
         if((diff_time>GESTURE_DIFF_TIME_MIN) && (diff_time<GESTURE_DIFF_TIME_MAX)) {
             s_sensor2_time = 0;
@@ -247,10 +237,10 @@ bool avoid_object(void) {
     {
         encountered_obstacle = true;
         // Move left until no detection of object
-        motor_move_backward(100, 300);
-        motor_turn_right(100,500);
-        motor_move_forward(100,500);
-        motor_turn_left(100,500);
+        motor_move_backward(100, 1000);
+        motor_turn_right(100,1000);
+        motor_move_forward(100,1000);
+        motor_turn_left(100,1000);
         return true;
     }
     return false;
@@ -270,13 +260,13 @@ bool state_line_follower(void) {
         int s1 = line_follower_s1.readSensor();
         int s2 = line_follower_s2.readSensor();
         if (s1 && s2) {
-            //motor_move_forward(100, 100);
+            motor_move_forward(100, 500);
         }
         else if (s1 && !s2) {
-            //motor_turn_right(100, 50);
+            motor_move_forward(100, 500);
         }
         else if (!s1 && s2) {
-            //motor_turn_left(100, 50);
+            motor_move_forward(100, 500);
         }
         b1 = collision_s1.readSensor();
         b2 = collision_s2.readSensor();
@@ -313,7 +303,7 @@ bool state_extraction(void) {
         // When moved forward a # of times equal to cycle limit turn left and start new exploration cycle
         if (count == cycle_limit) {
             // Turn 90 degrees to avoid obstacle
-            motor_turn_left(100,500);
+            motor_turn_left(100,1000);
             // If the robot encountered an obstacle it wants to turn left at a shorter interval
             // in order to increase likelihood of recording obstacles
             if(encountered_obstacle) {
@@ -329,9 +319,13 @@ bool state_extraction(void) {
             count = 0;
             cycle_count++;
         }
+      b1 = collision_s1.readSensor();
+      b2 = collision_s2.readSensor();
     }
     return true;
 }
+
+//#define DEBUG
 
 /**
  *
@@ -358,26 +352,56 @@ bool state_rendezvous(void) {
         switch (cur_state)
         {
             case RENDEZVOUS_1:
-                if (gesture == GESTURE_TYPE_LEFT_TO_RIGHT) cur_state = RENDEZVOUS_2;
-                else if (gesture != GESTURE_TYPE_NONE) cur_state = RENDEZVOUS_INCORRECT;
+                if (gesture == GESTURE_TYPE_LEFT_TO_RIGHT) {
+                  cur_state = RENDEZVOUS_2;
+                  #ifdef DEBUG
+                  led_set_color(0, 255, 0);
+                  delay(1000);
+                  led_set_color(0, 0, 0);
+                  #endif
+
+                }
+                else if (gesture != GESTURE_TYPE_NONE && gesture != GESTURE_TYPE_ALL) cur_state = RENDEZVOUS_INCORRECT;
                 break;
             case RENDEZVOUS_2:
-                if (gesture == GESTURE_TYPE_LEFT_TO_RIGHT) cur_state = RENDEZVOUS_3;
-                else if (gesture != GESTURE_TYPE_NONE) cur_state = RENDEZVOUS_INCORRECT;
+                if (gesture == GESTURE_TYPE_LEFT_TO_RIGHT) {
+                  cur_state = RENDEZVOUS_3;
+                  #ifdef DEBUG
+                  led_set_color(0, 255, 0);
+                  delay(1000);
+                  led_set_color(0, 0, 0);
+                  #endif
+                }
+                else if (gesture != GESTURE_TYPE_NONE && gesture != GESTURE_TYPE_ALL) cur_state = RENDEZVOUS_INCORRECT;
                 break;
             case RENDEZVOUS_3:
-                if (gesture == GESTURE_TYPE_LEFT_TO_RIGHT) cur_state = RENDEZVOUS_4;
-                else if (gesture != GESTURE_TYPE_NONE) cur_state = RENDEZVOUS_INCORRECT;
+                if (gesture == GESTURE_TYPE_LEFT_TO_RIGHT) {
+                  cur_state = RENDEZVOUS_4;
+                  #ifdef DEBUG
+                  led_set_color(0, 255, 0);
+                  delay(1000);
+                  led_set_color(0, 0, 0);
+                  #endif
+                }
+                else if (gesture != GESTURE_TYPE_NONE && gesture != GESTURE_TYPE_ALL) cur_state = RENDEZVOUS_INCORRECT;
                 break;
             case RENDEZVOUS_4:
-                if (gesture == GESTURE_TYPE_LEFT_TO_RIGHT) cur_state = RENDEZVOUS_DONE;
-                else if (gesture != GESTURE_TYPE_NONE) cur_state = RENDEZVOUS_INCORRECT;
+                if (gesture == GESTURE_TYPE_LEFT_TO_RIGHT) {
+                  cur_state = RENDEZVOUS_DONE;
+                  #ifdef DEBUG
+                  led_set_color(0, 255, 0);
+                  delay(1000);
+                  led_set_color(0, 0, 0);
+                  #endif
+                }
+                else if (gesture != GESTURE_TYPE_NONE && gesture != GESTURE_TYPE_ALL) cur_state = RENDEZVOUS_INCORRECT;
                 break;
             case RENDEZVOUS_INCORRECT:
                 led_set_color(255, 0, 0);
                 delay(5000);
                 led_set_color(0, 0, 0);
                 cur_state = RENDEZVOUS_1;
+                break;
             default:
                 break;
         }
@@ -388,8 +412,11 @@ bool state_rendezvous(void) {
     return true;
 }
 
+// Init state
+enum MakeBlockStates g_cur_state =  MB_STATE_LINE_FOLLOWER_1;
+
 // Setup function called upon initialization
-void setup(void) { }
+void setup(void) {}
 
 // Main loop function
 void loop(void) {

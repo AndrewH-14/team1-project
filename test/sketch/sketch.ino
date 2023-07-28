@@ -1,12 +1,19 @@
 #include <MeMegaPi.h>
 
 #include "led.h"
+#include "motor.h"
 
 #include "src/MeCollisionSensor.h"
 #include "src/MeSingleLineFollower.h"
+#include "src/MeBarrierSensor.h"
 
 #define COLLISION_S1_PIN  A11
 #define COLLISION_S2_PIN  A12
+
+// Barrier Macros
+#define BARRIER_S1_PIN        A6
+#define BARRIER_S2_PIN        A7
+#define BARRIER_S3_PIN        A8
 
 MeCollisionSensor collision_s1(COLLISION_S1_PIN);
 MeCollisionSensor collision_s2(COLLISION_S2_PIN);
@@ -31,6 +38,7 @@ void loop(void) {
     led_set_color(255, 255, 255);
     if (s1) {
       led_set_color(255, 0, 0);
+      motor_move_forward(100, 100);
     }
     if (s2) {
       led_set_color(0, 0, 255);
