@@ -61,7 +61,6 @@ bool state_extraction_start(void) {
         encountered_obstacle = false;
         gesture_type = 0;
     }
-    avoid_object();
     // Move left if object, move forward if no object, increase count if moved forward
     if (!avoid_object()) {
         count++;
@@ -92,7 +91,7 @@ bool state_extraction_start(void) {
     gesture_type = detect_gesture();
 
     // Check if a hand signal has been waved and if it has stop function
-    if (gesture_type != GESTURE_TYPE_RIGHT_TO_LEFT)
+    if (gesture_type == GESTURE_TYPE_RIGHT_TO_LEFT)
     {
         return true;
     }
@@ -110,10 +109,11 @@ bool state_extraction_start(void) {
 bool avoid_object(void) {
     // Check if there is an object detected by a sensor
     uint8_t sta = read_obstacle_sta();
+    gesture_type = detect_gesture();
     if ((sta == S3_FREE_S2_FREE_S1_FREE))
     {
         // Move forward if no objects
-        motor_move_forward(100,300);
+        motor_move_forward(100,250);
         return false;
     }
     // If object in front move right
@@ -121,9 +121,9 @@ bool avoid_object(void) {
     {
         encountered_obstacle = true;
         // Move left until no detection of object
-        motor_move_backward(100, 300);
+        motor_move_backward(100, 500);
         motor_turn_right(100,500);
-        motor_move_forward(100,500);
+        motor_move_forward(100,250);
         motor_turn_left(100,500);
         return true;
     }
