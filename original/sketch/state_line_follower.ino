@@ -51,7 +51,7 @@ enum LineFollowingStates get_state(void) {
 */
 bool state_line_follower_start(void) {
     enum LineFollowingStates sensor_state = get_state();
-    while (!button_is_pressed()) {
+    while (true) {
         sensor_state = get_state();
         switch (sensor_state) {
             case SEN1_IN_SEN2_IN:
