@@ -75,13 +75,15 @@ enum RendezvousStates {
     RENDEZVOUS_3,
     RENDEZVOUS_4,
     RENDEZVOUS_DONE,
-    RENDEZVOUS_INCORRECT
+    RENDEZVOUS_INCORRECT,
+    RENDEZVOUS_SIGNAL_READ
 };
 // All possible MakeBlock states
 enum MakeBlockStates {
     MB_STATE_LINE_FOLLOWER_1,
     MB_STATE_EXTRACTION,
     MB_STATE_RENDEZVOUS_VERIFY,
+    MB_STATE_DATA_EXTRACTION,
     MB_STATE_LINE_FOLLOWER_2,
     MB_STATE_DONE
 };
@@ -256,24 +258,27 @@ bool avoid_object(void) {
 bool state_line_follower(void) {
     int b1 = collision_s1.readSensor();
     int b2 = collision_s2.readSensor();
-    while (b1 && b2) {
+    int count = 0;
+    // Loop until impact trigger has been pressed three times
+    while (count < 3) {
         int s1 = line_follower_s1.readSensor();
         int s2 = line_follower_s2.readSensor();
         if (s1 && s2) {
             motor_move_forward(100, 500);
         }
         else if (s1 && !s2) {
-            motor_move_forward(100, 500);
+            motor_turn_right(100, 500);
         }
         else if (!s1 && s2) {
-            motor_move_forward(100, 500);
+            motor_turn_left(100, 500);
         }
+        // Check if the button has been pressed
         b1 = collision_s1.readSensor();
         b2 = collision_s2.readSensor();
+        if (!b1 || !b2) { count++; }
     }
     return true;
 }
-
 
 /**
  * The start point for the extraction state. This function will return once
@@ -325,32 +330,40 @@ bool state_extraction(void) {
     return true;
 }
 
-//#define DEBUG
+#define DEBUG
 
 /**
+ * Function that will implment rendezvous verify functionality
  *
+ * @retval true
+ * @retval false
  */
 bool state_rendezvous(void) {
-    enum RendezvousStates cur_state = RENDEZVOUS_1;
+    enum RendezvousStates cur_state = RENDEZVOUS_SIGNAL_READ;
     // 3 second pause
     delay(3000);
     // Flash Green to verify correct robot
     led_set_color(0, 255, 0);
     delay(1000);
     led_set_color(0, 0, 0);
-    // Pulse purple light to signal hand signal read mode
-    for (int i = 0; i < 10; i++) {
-        delay(200);
-        led_set_color(255, 0, 255);
-        delay(200);
-        led_set_color(0, 0, 0);
-    }
+    // 3 second pause
+    delay(3000);
     // Loop until the correct gesture sequence is detected
     while (cur_state != RENDEZVOUS_DONE) {
         // Get the current gesture type
         enum GestureTypes gesture = detect_gesture();
         switch (cur_state)
         {
+            case RENDEZVOUS_SIGNAL_READ:
+                // Pulse purple light to signal hand signal read mode
+                for (int i = 0; i < 5; i++) {
+                    delay(200);
+                    led_set_color(255, 0, 255);
+                    delay(200);
+                    led_set_color(0, 0, 0);
+                }
+                cur_state = RENDEZVOUS_1;
+                break;
             case RENDEZVOUS_1:
                 if (gesture == GESTURE_TYPE_LEFT_TO_RIGHT) {
                   cur_state = RENDEZVOUS_2;
@@ -397,23 +410,61 @@ bool state_rendezvous(void) {
                 else if (gesture != GESTURE_TYPE_NONE && gesture != GESTURE_TYPE_ALL) cur_state = RENDEZVOUS_INCORRECT;
                 break;
             case RENDEZVOUS_INCORRECT:
+                // Flash red to signal incorrect
                 led_set_color(255, 0, 0);
                 delay(5000);
                 led_set_color(0, 0, 0);
-                cur_state = RENDEZVOUS_1;
+                cur_state = RENDEZVOUS_SIGNAL_READ;
                 break;
             default:
                 break;
         }
     }
+    // Flash green to signal success
     led_set_color(0, 255, 0);
     delay(5000);
     led_set_color(0, 0, 0);
     return true;
 }
 
+/**
+ * Function that will implement data extraction functionality.
+ *
+ * @retval true
+ * @retval false
+ */
+bool state_data_extraction(void) {
+    // Pause operations
+    int b1 = collision_s1.readSensor();
+    int b2 = collision_s2.readSensor();
+    while (b1 && b2) {
+        delay(100);
+        b1 = collision_s1.readSensor();
+        b2 = collision_s2.readSensor();
+    }
+    // Delay until impact switch is released
+    while (!b1 || !b2) {
+        delay(100);
+        b1 = collision_s1.readSensor();
+        b2 = collision_s2.readSensor();
+    }
+    // Wait until operations are resumed
+    while (b1 && b2) {
+        delay(100);
+        b1 = collision_s1.readSensor();
+        b2 = collision_s2.readSensor();
+    }
+    // Delay until impact switch is released
+    while (!b1 || !b2) {
+        delay(100);
+        b1 = collision_s1.readSensor();
+        b2 = collision_s2.readSensor();
+    }
+    return true;
+}
+
 // Init state
-enum MakeBlockStates g_cur_state =  MB_STATE_LINE_FOLLOWER_1;
+enum MakeBlockStates g_cur_state =  MB_STATE_DATA_EXTRACTION;
 
 // Setup function called upon initialization
 void setup(void) {}
@@ -443,6 +494,14 @@ void loop(void) {
             delay(1000);
             led_set_color(0, 0, 0);
             state_rendezvous();
+            g_cur_state = MB_STATE_DATA_EXTRACTION;
+            break;
+        case MB_STATE_DATA_EXTRACTION:
+            // LEDS will be white during this state
+            led_set_color(255, 255, 255);
+            delay(1000);
+            led_set_color(0, 0, 0);
+            state_data_extraction();
             g_cur_state = MB_STATE_LINE_FOLLOWER_2;
             break;
         case MB_STATE_LINE_FOLLOWER_2:
@@ -454,7 +513,7 @@ void loop(void) {
             g_cur_state = MB_STATE_DONE;
             break;
         case MB_STATE_DONE:
-            // Set LED to green to signal successful mission.
+            // Set LEDs to green to signal successful mission.
             led_set_color(0, 255, 0);
             break;
         default:
