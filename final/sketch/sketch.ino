@@ -250,9 +250,9 @@ bool avoid_object(void) {
 
 /**
  * The start point for the line follower 1 & 2 states. This function will return
- * once a line is no longer detected.
+ * once the impact trigger has been pressed three times.
  *
- * @retval true  A line is no longer detected.
+ * @retval true  Line dection state over.
  * @retval false An error occured.
 */
 bool state_line_follower(void) {
@@ -264,18 +264,27 @@ bool state_line_follower(void) {
         int s1 = line_follower_s1.readSensor();
         int s2 = line_follower_s2.readSensor();
         if (s1 && s2) {
-            motor_move_forward(100, 500);
+            motor_move_forward(75, 50);
         }
         else if (s1 && !s2) {
-            motor_turn_right(100, 500);
+            motor_turn_right(75, 75);
         }
         else if (!s1 && s2) {
-            motor_turn_left(100, 500);
+            motor_turn_left(75, 75);
         }
         // Check if the button has been pressed
         b1 = collision_s1.readSensor();
         b2 = collision_s2.readSensor();
-        if (!b1 || !b2) { count++; }
+        if (!b1 || !b2) {
+            count++;
+            // Delay until button is released
+            while (!b1 || !b2) {
+                // Debouncing
+                delay(100);
+                b1 = collision_s1.readSensor();
+                b2 = collision_s2.readSensor();
+            }
+        }
     }
     return true;
 }
@@ -327,10 +336,15 @@ bool state_extraction(void) {
       b1 = collision_s1.readSensor();
       b2 = collision_s2.readSensor();
     }
+    // Delay until button is released
+    while (!b1 || !b2) {
+        // Debouncing
+        delay(100);
+        b1 = collision_s1.readSensor();
+        b2 = collision_s2.readSensor();
+    }
     return true;
 }
-
-#define DEBUG
 
 /**
  * Function that will implment rendezvous verify functionality
@@ -340,6 +354,7 @@ bool state_extraction(void) {
  */
 bool state_rendezvous(void) {
     enum RendezvousStates cur_state = RENDEZVOUS_SIGNAL_READ;
+    bool correct_sequence = true;
     // 3 second pause
     delay(3000);
     // Flash Green to verify correct robot
@@ -362,6 +377,8 @@ bool state_rendezvous(void) {
                     delay(200);
                     led_set_color(0, 0, 0);
                 }
+                // Will be set to false if wroing hand gesture detected
+                correct_sequence = true;
                 cur_state = RENDEZVOUS_1;
                 break;
             case RENDEZVOUS_1:
@@ -438,24 +455,28 @@ bool state_data_extraction(void) {
     int b1 = collision_s1.readSensor();
     int b2 = collision_s2.readSensor();
     while (b1 && b2) {
+        // Debouncing
         delay(100);
         b1 = collision_s1.readSensor();
         b2 = collision_s2.readSensor();
     }
     // Delay until impact switch is released
     while (!b1 || !b2) {
+        // Debouncing
         delay(100);
         b1 = collision_s1.readSensor();
         b2 = collision_s2.readSensor();
     }
     // Wait until operations are resumed
     while (b1 && b2) {
+        // Debouncing
         delay(100);
         b1 = collision_s1.readSensor();
         b2 = collision_s2.readSensor();
     }
     // Delay until impact switch is released
     while (!b1 || !b2) {
+        // Debouncing
         delay(100);
         b1 = collision_s1.readSensor();
         b2 = collision_s2.readSensor();
@@ -464,7 +485,7 @@ bool state_data_extraction(void) {
 }
 
 // Init state
-enum MakeBlockStates g_cur_state =  MB_STATE_DATA_EXTRACTION;
+enum MakeBlockStates g_cur_state =  MB_STATE_LINE_FOLLOWER_1;
 
 // Setup function called upon initialization
 void setup(void) {}

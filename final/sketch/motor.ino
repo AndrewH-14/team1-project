@@ -71,10 +71,10 @@ void motor_move_backward(uint8_t speed, uint16_t time_ms)
 void motor_turn_left(uint8_t speed, uint16_t time_ms)
 {
   motor_stop();
-  motor1.run(-speed);
-  motor2.run(-speed);
-  motor3.run(-speed);
-  motor4.run(-speed);
+  motor1.run(speed);
+  motor2.run(speed);
+  motor3.run(speed);
+  motor4.run(speed);
   delay(time_ms);
   motor_stop();
 }

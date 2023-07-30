@@ -1,0 +1,33 @@
+@startuml
+
+start
+group State Initialization
+:Flash LEDs purple to signal the start of the state;
+:Delay 3 seconds;
+:Flash LEDs green to verfiy robot;
+:Delay 3 seconds;
+end group
+group User Authentication
+while (User authenticated?) is (no)
+    if (User's first attempt?) then (no)
+        :Flash LEDs red;
+    else (yes)
+    endif
+    :Pulse LEDs purple to signal gesture detection active;
+    :Detect gesture 1;
+    if (Gesture 1 Correct?) then (yes)
+        :Detect gesture 2;
+        if (Gesture 2 Correct?) then (yes)
+            :Detect gesture 3;
+            if (Gesture 3 Correct?) then (yes)
+                :Detect gesture 4;
+            else (no)
+            endif
+        else (no)
+        endif
+    else (no)
+    endif
+endwhile (yes)
+end group
+stop
+@enduml

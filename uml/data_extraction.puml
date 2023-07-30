@@ -1,0 +1,15 @@
+@startuml
+start
+:Flash LED to signal the start of the state;
+while (Impact trigger pressed?) is (no)
+    :Wait for program execution to be paused;
+endwhile (yes)
+:Delay to prevent duplicate sensor readings;
+:Program is paused for data extraction;
+while (Impact trigger pressed?) is (no)
+    :Wait for program execution to be resumed;
+endwhile (yes)
+:Delay to prevent duplicate sensor readings;
+:Program execution is resumed;
+stop
+@enduml

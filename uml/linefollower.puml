@@ -1,0 +1,27 @@
+@startuml
+start
+group State Initialization
+:Flash LEDs blue to signal the start of the state;
+end group
+group Line Following Functionality
+while (Reached impact trigger threshold? (> 3)) is (no)
+    switch (Read line detection sensors (s1 & s2))
+        case (s1 && s2)
+            :Move forward;
+        case (s1 && !s2)
+            :Rotate left;
+        case (!s1 && s2)
+            :Rotate right;
+        case (!s1 && !s2)
+            :Wait for user input;
+    endswitch
+    :Read impact trigger sensors;
+    if (Impact trigger press detected) then (yes)
+        :Increment impact trigger count;
+        :Delay to prevent duplicate sensor readings;
+    else (no)
+    endif
+endwhile (yes)
+end group
+stop
+@enduml
