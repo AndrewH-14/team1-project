@@ -75,7 +75,7 @@ enum RendezvousStates {
     RENDEZVOUS_3,
     RENDEZVOUS_4,
     RENDEZVOUS_DONE,
-    RENDEZVOUS_INCORRECT,
+    RENDEZVOUS_CHECK,
     RENDEZVOUS_SIGNAL_READ
 };
 // All possible MakeBlock states
@@ -383,64 +383,101 @@ bool state_rendezvous(void) {
                 break;
             case RENDEZVOUS_1:
                 if (gesture == GESTURE_TYPE_LEFT_TO_RIGHT) {
-                  cur_state = RENDEZVOUS_2;
-                  #ifdef DEBUG
-                  led_set_color(0, 255, 0);
-                  delay(1000);
-                  led_set_color(0, 0, 0);
-                  #endif
+                    cur_state = RENDEZVOUS_2;
+                    #ifdef DEBUG
+                    led_set_color(0, 255, 0);
+                    delay(1000);
+                    led_set_color(0, 0, 0);
+                    #endif
 
                 }
-                else if (gesture != GESTURE_TYPE_NONE && gesture != GESTURE_TYPE_ALL) cur_state = RENDEZVOUS_INCORRECT;
+                else if (gesture != GESTURE_TYPE_NONE && gesture != GESTURE_TYPE_ALL) {
+                    cur_state = RENDEZVOUS_2;
+                    correct_sequence = false;
+                    #ifdef DEBUG
+                    led_set_color(255, 0, 0);
+                    delay(1000);
+                    led_set_color(0, 0, 0);
+                    #endif
+                }
                 break;
             case RENDEZVOUS_2:
                 if (gesture == GESTURE_TYPE_LEFT_TO_RIGHT) {
-                  cur_state = RENDEZVOUS_3;
-                  #ifdef DEBUG
-                  led_set_color(0, 255, 0);
-                  delay(1000);
-                  led_set_color(0, 0, 0);
-                  #endif
+                    cur_state = RENDEZVOUS_3;
+                    #ifdef DEBUG
+                    led_set_color(0, 255, 0);
+                    delay(1000);
+                    led_set_color(0, 0, 0);
+                    #endif
                 }
-                else if (gesture != GESTURE_TYPE_NONE && gesture != GESTURE_TYPE_ALL) cur_state = RENDEZVOUS_INCORRECT;
+                else if (gesture != GESTURE_TYPE_NONE && gesture != GESTURE_TYPE_ALL) {
+                    cur_state = RENDEZVOUS_3;
+                    correct_sequence = false;
+                    #ifdef DEBUG
+                    led_set_color(255, 0, 0);
+                    delay(1000);
+                    led_set_color(0, 0, 0);
+                    #endif
+                }
                 break;
             case RENDEZVOUS_3:
                 if (gesture == GESTURE_TYPE_LEFT_TO_RIGHT) {
-                  cur_state = RENDEZVOUS_4;
-                  #ifdef DEBUG
-                  led_set_color(0, 255, 0);
-                  delay(1000);
-                  led_set_color(0, 0, 0);
-                  #endif
+                    cur_state = RENDEZVOUS_4;
+                    #ifdef DEBUG
+                    led_set_color(0, 255, 0);
+                    delay(1000);
+                    led_set_color(0, 0, 0);
+                    #endif
                 }
-                else if (gesture != GESTURE_TYPE_NONE && gesture != GESTURE_TYPE_ALL) cur_state = RENDEZVOUS_INCORRECT;
+                else if (gesture != GESTURE_TYPE_NONE && gesture != GESTURE_TYPE_ALL) {
+                    cur_state = RENDEZVOUS_4;
+                    correct_sequence = false;
+                    #ifdef DEBUG
+                    led_set_color(255, 0, 0);
+                    delay(1000);
+                    led_set_color(0, 0, 0);
+                    #endif
+                }
                 break;
             case RENDEZVOUS_4:
                 if (gesture == GESTURE_TYPE_LEFT_TO_RIGHT) {
-                  cur_state = RENDEZVOUS_DONE;
-                  #ifdef DEBUG
-                  led_set_color(0, 255, 0);
-                  delay(1000);
-                  led_set_color(0, 0, 0);
-                  #endif
+                    cur_state = RENDEZVOUS_CHECK;
+                    #ifdef DEBUG
+                    led_set_color(0, 255, 0);
+                    delay(1000);
+                    led_set_color(0, 0, 0);
+                    #endif
                 }
-                else if (gesture != GESTURE_TYPE_NONE && gesture != GESTURE_TYPE_ALL) cur_state = RENDEZVOUS_INCORRECT;
+                else if (gesture != GESTURE_TYPE_NONE && gesture != GESTURE_TYPE_ALL) {
+                    cur_state = RENDEZVOUS_CHECK;
+                    correct_sequence = false;
+                    #ifdef DEBUG
+                    led_set_color(255, 0, 0);
+                    delay(1000);
+                    led_set_color(0, 0, 0);
+                    #endif
+                }
                 break;
-            case RENDEZVOUS_INCORRECT:
-                // Flash red to signal incorrect
-                led_set_color(255, 0, 0);
-                delay(5000);
-                led_set_color(0, 0, 0);
-                cur_state = RENDEZVOUS_SIGNAL_READ;
+            case RENDEZVOUS_CHECK:
+                if (!correct_sequence) {
+                    // Flash red to signal incorrect
+                    led_set_color(255, 0, 0);
+                    delay(5000);
+                    led_set_color(0, 0, 0);
+                    cur_state = RENDEZVOUS_SIGNAL_READ;
+                }
+                else {
+                    // Flash green to signal success
+                    led_set_color(0, 255, 0);
+                    delay(5000);
+                    led_set_color(0, 0, 0);
+                    cur_state = RENDEZVOUS_DONE;
+                }
                 break;
             default:
                 break;
         }
     }
-    // Flash green to signal success
-    led_set_color(0, 255, 0);
-    delay(5000);
-    led_set_color(0, 0, 0);
     return true;
 }
 
