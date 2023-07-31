@@ -1,4 +1,7 @@
 import PySimpleGUI as sg
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import numpy as np
 import csv
 
 # Read the barrier synthetic dataset
@@ -50,23 +53,60 @@ graph2 = [sg.Graph(canvas_size=(graph_width, graph_height), graph_bottom_left=gr
 
 # All the stuff inside your window.
 layout = [ [sg.Text("MakeBlock Mission Data", expand_x=True, justification='center', font=('Arial', 30), background_color='Black')],
-           [sg.Text("Sensor 1 Readings:", font=('Arial', 17), background_color="Black", pad=10)],
+           [sg.Text("Sensor 1 Readings:", font=('Arial', 20), background_color="Black", pad=10)],
            header1, graph1,
-           [sg.Text("Sensor 2 Readings:", font=('Arial', 17), background_color="Black", pad=10)],
+           [sg.Text("Sensor 2 Readings:", font=('Arial', 20), background_color="Black", pad=10)],
            header2, graph2 ]
+
+# Function to create the graph based on the selected button
+def create_graph(button_num):
+    # Data for the graph (You can replace this with your own data)
+    x = np.linspace(0, 10, 100)
+    y = np.sin(button_num * x)
+    
+    if button_num == 1:
+        # Display Barrier Data
+        data_type = 'Barrier Sensors'
+    elif button_num == 2:
+        # Display Line Data
+        data_type = 'Line Following Sensors'
+    elif button_num == 3:
+        # Display Line Data
+        data_type = 'Collision Sensors'
+
+    # Create the figure and plot the graph
+    fig, ax = plt.subplots()
+    ax.plot(x, y)
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Sensor Reading')
+    ax.set_title(f'Line graph for the {data_type}')
+    ax.grid(True)
+
+    # Clear previous drawings on the Matplotlib element
+    canvas_elem.TKCanvas.delete("all")
+
+    # Draw the figure on the Matplotlib element
+    figure_canvas_agg = FigureCanvasTkAgg(fig, master=canvas_elem.TKCanvas)
+    figure_canvas_agg.draw()
+    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+        
 
 # Create the Window
 sg.theme('Black')
 window = sg.Window('Mission Data', layout, resizable=True, margins=(20, 20))
+
+# Get the Matplotlib element from the layout
+canvas_elem = window['-CANVAS-']
+
 # Event Loop to process "events" and get the "values" of the inputs
 while True:
     event, values = window.read()
     if event == 'Barrier':
-        print("Display Barrier Data!")
+        create_graph(1)
     if event == 'Line':
-        print("Display Line Data!")
+        create_graph(2)
     if event == 'Collision':
-        print("Display Collision Data!")
+        create_graph(3)
     if event == sg.WIN_CLOSED:
         break
 
