@@ -24,10 +24,10 @@
 // Line Follower Macros
 #define LINEFOLLOWER_S1_PIN   A9
 #define LINEFOLLOWER_S2_PIN   A10
-#define LINEFOLLOWER_FORWARD_SPEED 75
-#define LINEFOLLOWER_FORWARD_DELAY 50
-#define LINEFOLLOWER_TURN_SPEED    75
-#define LINEFOLLOWER_TURN_DELAY    50
+#define LINEFOLLOWER_FORWARD_SPEED 200
+#define LINEFOLLOWER_FORWARD_DELAY 1
+#define LINEFOLLOWER_TURN_SPEED    150
+#define LINEFOLLOWER_TURN_DELAY    75
 // Gesture Detection Macros
 #define GESTURE_DIFF_TIME_MIN 20
 #define GESTURE_DIFF_TIME_MAX 1000
@@ -236,7 +236,7 @@ bool avoid_object(void) {
     int s1 = line_follower_s1.readSensor();
     int s2 = line_follower_s2.readSensor();
     // If we are on a line, we want to turn 180 degrees backwards
-    if (s1 || s2) {
+    if (!s1 || !s2) {
         motor_turn_right(100, 2000);
         return false;
     }
@@ -273,13 +273,13 @@ bool state_line_follower(void) {
     while (count < 3) {
         int s1 = line_follower_s1.readSensor();
         int s2 = line_follower_s2.readSensor();
-        if (s1 && s2) {
+        if (!s1 && !s2) {
             motor_move_forward(LINEFOLLOWER_FORWARD_SPEED, LINEFOLLOWER_FORWARD_DELAY);
         }
-        else if (s1 && !s2) {
+        else if (!s1 && s2) {
             motor_turn_right(LINEFOLLOWER_TURN_SPEED, LINEFOLLOWER_TURN_DELAY);
         }
-        else if (!s1 && s2) {
+        else if (s1 && !s2) {
             motor_turn_left(LINEFOLLOWER_TURN_SPEED, LINEFOLLOWER_TURN_DELAY);
         }
         // Check if the button has been pressed
