@@ -232,15 +232,21 @@ uint8_t read_obstacle_sta(void) {
 bool avoid_object(void) {
     // Check if there is an object detected by a sensor
     uint8_t sta = read_obstacle_sta();
-    if ((sta == S3_FREE_S2_FREE_S1_FREE))
-    {
+    // Check if we are on a line
+    int s1 = line_follower_s1.readSensor();
+    int s2 = line_follower_s2.readSensor();
+    // If we are on a line, we want to turn 180 degrees backwards
+    if (s1 || s2) {
+        motor_turn_right(100, 2000);
+        return false;
+    }
+    else if ((sta == S3_FREE_S2_FREE_S1_FREE)) {
         // Move forward if no objects
         motor_move_forward(100,300);
         return false;
     }
     // If object in front move right
-    else
-    {
+    else {
         encountered_obstacle = true;
         // Move right until no detection of object
         motor_move_backward(100, 1000);
