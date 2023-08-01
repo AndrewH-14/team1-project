@@ -24,9 +24,9 @@
 // Line Follower Macros
 #define LINEFOLLOWER_S1_PIN   A9
 #define LINEFOLLOWER_S2_PIN   A10
-#define LINEFOLLOWER_FORWARD_SPEED 200
+#define LINEFOLLOWER_FORWARD_SPEED 75
 #define LINEFOLLOWER_FORWARD_DELAY 1
-#define LINEFOLLOWER_TURN_SPEED    150
+#define LINEFOLLOWER_TURN_SPEED    100
 #define LINEFOLLOWER_TURN_DELAY    75
 // Gesture Detection Macros
 #define GESTURE_DIFF_TIME_MIN 20
@@ -237,7 +237,7 @@ bool avoid_object(void) {
     int s2 = line_follower_s2.readSensor();
     // If we are on a line, we want to turn 180 degrees backwards
     if (!s1 || !s2) {
-        motor_turn_right(100, 2000);
+        motor_turn_right(100, 1000);
         return false;
     }
     else if ((sta == S3_FREE_S2_FREE_S1_FREE)) {
