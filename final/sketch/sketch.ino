@@ -24,6 +24,10 @@
 // Line Follower Macros
 #define LINEFOLLOWER_S1_PIN   A9
 #define LINEFOLLOWER_S2_PIN   A10
+#define LINEFOLLOWER_FORWARD_SPEED 75
+#define LINEFOLLOWER_FORWARD_DELAY 50
+#define LINEFOLLOWER_TURN_SPEED    75
+#define LINEFOLLOWER_TURN_DELAY    50
 // Gesture Detection Macros
 #define GESTURE_DIFF_TIME_MIN 20
 #define GESTURE_DIFF_TIME_MAX 1000
@@ -238,7 +242,7 @@ bool avoid_object(void) {
     else
     {
         encountered_obstacle = true;
-        // Move left until no detection of object
+        // Move right until no detection of object
         motor_move_backward(100, 1000);
         motor_turn_right(100,1000);
         motor_move_forward(100,1000);
@@ -264,13 +268,13 @@ bool state_line_follower(void) {
         int s1 = line_follower_s1.readSensor();
         int s2 = line_follower_s2.readSensor();
         if (s1 && s2) {
-            motor_move_forward(75, 50);
+            motor_move_forward(LINEFOLLOWER_FORWARD_SPEED, LINEFOLLOWER_FORWARD_DELAY);
         }
         else if (s1 && !s2) {
-            motor_turn_right(75, 75);
+            motor_turn_right(LINEFOLLOWER_TURN_SPEED, LINEFOLLOWER_TURN_DELAY);
         }
         else if (!s1 && s2) {
-            motor_turn_left(75, 75);
+            motor_turn_left(LINEFOLLOWER_TURN_SPEED, LINEFOLLOWER_TURN_DELAY);
         }
         // Check if the button has been pressed
         b1 = collision_s1.readSensor();
@@ -320,7 +324,7 @@ bool state_extraction(void) {
             motor_turn_left(100,1000);
             // If the robot encountered an obstacle it wants to turn left at a shorter interval
             // in order to increase likelihood of recording obstacles
-            if(encountered_obstacle) {
+            if (encountered_obstacle) {
                 if (cycle_limit > 1) {
                     cycle_limit--;
                 }
