@@ -249,10 +249,10 @@ bool avoid_object(void) {
     else {
         encountered_obstacle = true;
         // Move right until no detection of object
-        motor_move_backward(100, 1000);
-        motor_turn_right(100,1000);
-        motor_move_forward(100,1000);
-        motor_turn_left(100,1000);
+        motor_move_backward(100, 500);
+        motor_turn_right(100,500);
+        // motor_move_forward(100,1000);
+        // motor_turn_left(100,1000);
         return true;
     }
     return false;
@@ -326,8 +326,6 @@ bool state_extraction(void) {
         }
         // When moved forward a # of times equal to cycle limit turn left and start new exploration cycle
         if (count == cycle_limit) {
-            // Turn 90 degrees to avoid obstacle
-            motor_turn_left(100,1000);
             // If the robot encountered an obstacle it wants to turn left at a shorter interval
             // in order to increase likelihood of recording obstacles
             if (encountered_obstacle) {
