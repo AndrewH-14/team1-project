@@ -9,7 +9,7 @@ state MB_STATE_DONE
 
 [*] --> MB_STATE_LINE_FOLLOWER_1 : Program begins
 MB_STATE_LINE_FOLLOWER_1 --> MB_STATE_EXTRACTION : 3 Impact trigger presses
-MB_STATE_EXTRACTION --> MB_STATE_RENDEZVOUS_VERIFY : Gesture detected
+MB_STATE_EXTRACTION --> MB_STATE_RENDEZVOUS_VERIFY : Impact trigger press
 MB_STATE_RENDEZVOUS_VERIFY --> MB_STATE_DATA_EXTRACTION : Correct gesture sequence read
 MB_STATE_DATA_EXTRACTION --> MB_STATE_LINE_FOLLOWER_2 : Program resumed via impact trigger
 MB_STATE_LINE_FOLLOWER_2 --> MB_STATE_DONE : 3 Impact trigger presses

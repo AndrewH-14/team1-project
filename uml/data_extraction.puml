@@ -1,15 +1,19 @@
 @startuml
 start
-:Flash LED to signal the start of the state;
+:Flash LEDs white to signal the start of the state;
 while (Impact trigger pressed?) is (no)
     :Wait for program execution to be paused;
 endwhile (yes)
-:Delay to prevent duplicate sensor readings;
+while (Impact tigger pressed?) is (yes)
+    :Loop to prevent duplicate readings;
+endwhile (no)
 :Program is paused for data extraction;
 while (Impact trigger pressed?) is (no)
     :Wait for program execution to be resumed;
 endwhile (yes)
-:Delay to prevent duplicate sensor readings;
+while (Impact tigger pressed?) is (yes)
+    :Loop to prevent duplicate readings;
+endwhile (no)
 :Program execution is resumed;
 stop
 @enduml

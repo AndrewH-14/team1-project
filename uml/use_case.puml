@@ -1,0 +1,26 @@
+@startuml
+left to right direction
+actor Operator as o
+package MakeBlock_System {
+    usecase "Follow Line to EZ"   as LF1
+    usecase "Extraction"           as E
+    usecase "Verification"         as V
+    usecase "Data Extraction"      as DE
+    usecase "Follow Line to Start" as LF2
+    LF1 <.. (Move Wheels) : <<extends>>
+    LF1 <.. (Detect Line) : <<extends>>
+    E   <.. (Move Wheels) : <<extends>>
+    E   <.. (Detect Line) : <<extends>>
+    E   <.. (Detect Object) : <<extends>>
+    V   <.. (Detect Gesture) : <<extends>>
+    V   <.. (Display LEDs) : <<extends>>
+    DE  <.. (Detect Button Press) : <<extends>>
+    LF2 <.. (Move Wheels) : <<extends>>
+    LF2 <.. (Detect Line) : <<extends>>
+}
+o --> LF1 : Power on MakeBlock
+o --> E   : 3 Impact Trigger Presses
+o --> V   : Impact Trigger Press
+o --> DE  : Correct Hand Signal
+o -->LF2  : Program Resumed
+@enduml

@@ -1,15 +1,21 @@
 @startuml
 start
 :Flash LEDs yellow to signal the start of the state;
-:Read impact trigger sensors;
 while (Impact trigger pressed?) is (no)
-:Read obstacle detection sensors;
-switch (Obstacle detected?)
+:Read sensors;
+switch (Object detected?)
+    case (Line Detected)
+        :Move backwards;
+        :Turn around;
     case (Obstacle not detected)
         :Move forward;
     case (Obstacle detected)
+        :Move backwards;
         :Rotate to the right;
 endswitch
 endwhile (yes)
+while (Impact trigger pressed?) is (yes)
+:Loop to prevent duplicate readings;
+endwhile(no)
 stop
 @enduml

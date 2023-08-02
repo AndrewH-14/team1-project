@@ -1,5 +1,0 @@
-@startuml
-start
-:Set LEDs to green to signal successful mission completeion;
-stop
-@enduml

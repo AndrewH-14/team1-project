@@ -247,12 +247,9 @@ bool avoid_object(void) {
     }
     // If object in front move right
     else {
-        encountered_obstacle = true;
         // Move right until no detection of object
         motor_move_backward(100, 500);
         motor_turn_right(100,500);
-        // motor_move_forward(100,1000);
-        // motor_turn_left(100,1000);
         return true;
     }
     return false;
@@ -314,35 +311,9 @@ bool state_extraction(void) {
     int b1 = collision_s1.readSensor();
     int b2 = collision_s2.readSensor();
     while (b1 && b2) {
-        int count = 0;
-        int cycle_count = 0;
-        int cycle_limit = 5;
-        int gesture_type = 0;
-        encountered_obstacle = false;
         avoid_object();
-        // Move left if object, move forward if no object, increase count if moved forward
-        if (!avoid_object()) {
-            count++;
-        }
-        // When moved forward a # of times equal to cycle limit turn left and start new exploration cycle
-        if (count == cycle_limit) {
-            // If the robot encountered an obstacle it wants to turn left at a shorter interval
-            // in order to increase likelihood of recording obstacles
-            if (encountered_obstacle) {
-                if (cycle_limit > 1) {
-                    cycle_limit--;
-                }
-                encountered_obstacle = false;
-            }
-            // If the robot has turned sufficient times then the exploring region should increase
-            if ((cycle_count % 4) == 3 || (cycle_count % 4) == 1) {
-                cycle_limit += 1;
-            }
-            count = 0;
-            cycle_count++;
-        }
-      b1 = collision_s1.readSensor();
-      b2 = collision_s2.readSensor();
+        b1 = collision_s1.readSensor();
+        b2 = collision_s2.readSensor();
     }
     // Delay until button is released
     while (!b1 || !b2) {
