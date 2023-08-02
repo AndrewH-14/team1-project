@@ -237,19 +237,19 @@ bool avoid_object(void) {
     int s2 = line_follower_s2.readSensor();
     // If we are on a line, we want to turn 180 degrees backwards
     if (!s1 || !s2) {
-        motor_turn_right(100, 1000);
+        motor_turn_right(100, 500);
         return false;
     }
     else if ((sta == S3_FREE_S2_FREE_S1_FREE)) {
         // Move forward if no objects
-        motor_move_forward(100,300);
+        motor_move_forward(50,200);
         return false;
     }
     // If object in front move right
     else {
         // Move right until no detection of object
-        motor_move_backward(100, 500);
-        motor_turn_right(100,500);
+        motor_move_backward(100, 200);
+        motor_turn_right(100,300);
         return true;
     }
     return false;
