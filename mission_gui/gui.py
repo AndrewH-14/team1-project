@@ -6,9 +6,7 @@ import io
 
 # Create the frist header which will control input values
 buttons1 = [sg.Button('Barrier', font=('Arial', 16)), sg.Button('Line', font=('Arial', 16)), sg.Button('Collision', font=('Arial', 16))]
-start_time1 = [sg.Text('Start Time 1 (hh:mm):', font=('Arial', 14)), sg.In(size=8)]
-end_time1 = [sg.Text('End Time 1 (hh:mm):', font=('Arial', 14)), sg.In(size=8)]
-header1 = buttons1 + start_time1 + end_time1
+header1 = buttons1
 
 # Create the first graph which will display a single dataset
 graph1 = [sg.Image(filename='', key='-IMAGE-')]
